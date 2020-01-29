@@ -42,9 +42,8 @@ public class Game extends JFrame {
 
 	// methods 
 
-	/* TODO: determine if puzzle is solvable
-			 graphics
-			 popup box saying that the puzzle isn't solvable
+	/* TODO: determine if puzzle is solvable				 <------ ON HOLD
+			 popup box saying that the puzzle isn't solvable <------ ON HOLD
 	*/
 	/*
 		Build the game layout based on input from puzzle.in.
@@ -78,7 +77,6 @@ public class Game extends JFrame {
 				}
 
 				set_matrix_dimension(line_counter);
-				// System.out.println(this.get_matrix_dimension());
 				set_current_layout(puzzle_matrix);
 
 			} else {
@@ -93,23 +91,15 @@ public class Game extends JFrame {
 
 	public void graphics_setup() {
 
-		// setSize(400,400);
 		setLayout(new GridLayout(this.get_matrix_dimension(), this.get_matrix_dimension()));
 
 		for (int i = 0; i < this.get_matrix_dimension(); i++) {
 			int stop = this.get_matrix_dimension();
-			if (i == (this.get_matrix_dimension() - 1)) {
-				stop = this.get_matrix_dimension() - 1;
-			}
 			for (int j = 0; j < stop; j++) {
 				Tile tile = new Tile(current_layout[i][j]);
 				add(tile);
 			}
 		}
-
-		// add a blank tile to mimic an empty space
-		Tile blank = new Tile();
-		add(blank);
 
 		setTitle("8-Puzzle");
 		pack();

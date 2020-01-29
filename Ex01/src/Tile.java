@@ -28,10 +28,12 @@ public class Tile extends JPanel {
 	public void set_is_final_pos(boolean f) { this.is_final_pos = f; }
 
 	// constructors
-	public Tile() {}
 	public Tile(int value) {
 		this.tile_value = value;
 		this.tile_button = new JButton(Integer.toString(value));
+		if (value == 0) {
+			tile_button.setVisible(false);
+		}
 		tile_button.setPreferredSize(new Dimension(100,100));
 		add(tile_button);
 	}
