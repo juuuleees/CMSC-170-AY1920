@@ -52,7 +52,7 @@ public class Tile extends JPanel implements ActionListener {
 
 	// methods
 	/* TODO: onClick slide tile into empty space
-			 update possible moves
+			 update possible moves 						<-------- move to Game.java
 	*/
 	public void actionPerformed(ActionEvent e) {
 

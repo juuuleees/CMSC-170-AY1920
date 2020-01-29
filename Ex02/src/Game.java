@@ -1,4 +1,3 @@
-// TODO: specify java imports
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.lang.StringBuilder;
@@ -15,6 +14,7 @@ public class Game extends JFrame {
 	private JFrame frame;
 	private ArrayList<Tile> tiles = new ArrayList<Tile>();
 	private ArrayList<String> all_moves = new ArrayList<String>();
+	private ArrayList<State> frontier = new ArrayList<State>();
 	private File layout_file = new File("src/puzzle.in");
 	private String[][] puzzle_layout;
 	private int[][] current_layout;
@@ -41,15 +41,13 @@ public class Game extends JFrame {
 	public void set_win_condition(int[][] w) { this.win_condition = w; }
 	public void set_matrix_dimension(int md) { this.matrix_dimension = md; }
 	public void set_win_state(boolean w) { this.win_status = w; }
+	public void set_win_status(boolean win) { this.win_status = win; }
 
 	// constructors
 	public Game() {}
 
 	// methods 
 
-	/* TODO: determine if puzzle is solvable				 <------ ON HOLD
-			 popup box saying that the puzzle isn't solvable <------ ON HOLD
-	*/
 	/*
 		Build the game layout based on input from puzzle.in.
 	*/
@@ -94,6 +92,9 @@ public class Game extends JFrame {
 
 	}
 
+	/*
+		Finds tiles adjacent to the given tile.
+	*/
 	public void find_adjacent_tiles(Tile t) {
 
 		ArrayList<Integer> adj = new ArrayList<Integer>();
@@ -150,6 +151,92 @@ public class Game extends JFrame {
 
 	}
 
+	/*
+		Makes the win condition for later comparison.
+	*/
+	public void make_win_condition() {
+		int tile_count = this.get_matrix_dimension() * this.get_matrix_dimension();
+		int[][] final_board = new int[this.get_matrix_dimension()][this.get_matrix_dimension()];
+		int counter = 1;
+
+		for (int i = 0; i < this.get_matrix_dimension(); i++) {
+			for (int j = 0; j < this.get_matrix_dimension(); j++) {
+				if (counter == (this.get_matrix_dimension() * this.get_matrix_dimension())) {
+					counter = 0;
+					final_board[i][j] = counter;
+					break;
+				} else {
+					final_board[i][j] = counter;
+				}
+				counter++; 
+			}
+		}
+
+		this.set_win_condition(final_board); 
+
+	}
+
+	/*
+		Checks to see if the current board is the winning board.
+	*/
+	public void detect_win_state(int[][] board) {
+
+		boolean u_won = true;
+
+		for (int i = 0; i < this.get_matrix_dimension(); i++) {
+			for (int j = 0; j < this.get_matrix_dimension(); j++) {
+				if (board[i][j] != this.get_win_condition()[i][j]) {
+					u_won = false;
+					break;
+				}
+			}
+		}
+
+		this.set_win_status(u_won);
+
+	}
+
+	// Functions for BFS
+
+	/*
+		Looks for the position of the empty space on the board
+	*/
+	public int find_empty_space(int[][] layout) {
+		
+		int total_tiles = this.get_matrix_dimension() * this.get_matrix_dimension();
+		int free_space_index = 0;
+
+		for (int i = 0; i < this.get_matrix_dimension(); i++) {
+			for (int j = 0; j < this.get_matrix_dimension(); j++) {
+				if (layout[i][j] == 0) {
+					break;
+				}
+				free_space_index++;
+			}
+		}
+
+		return free_space_index;
+
+	}
+
+	public void BFSearch(State initial) {
+
+		State current_state = new State();
+		int last_index = 0;
+
+		frontier.add(initial);
+
+		// while(!frontier.isEmpty()) {	
+		// 	last_index =  frontier.size();
+		// 	current_state = frontier.get(last_index);
+			
+		// }
+
+	}
+
+	/*
+		Sets up game graphics.
+	*/
 	public void graphics_setup() {
 
 		setLayout(new GridLayout(this.get_matrix_dimension(), this.get_matrix_dimension()));
@@ -170,18 +257,28 @@ public class Game extends JFrame {
 	}
 
 	/*
+		Sets up backend.
+	*/
+	public void setup_backend() {
+		read_game_layout();
+		make_win_condition();
+	}
+
+	/*
 		Run the game.	
 	*/
 	public void run() {
-
-		read_game_layout();
+		setup_backend();
 		graphics_setup();
-
 	}
 
 }
 
 /*
+
+	NOTES:
+		Solve button will solve based on the current board configuration. So we replace the contents
+		of puzzle.in with the contents of the current board.
 
 	References:
 		http://zetcode.com/tutorials/javagamestutorial/movingsprites/
