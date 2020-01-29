@@ -93,10 +93,29 @@ public class Game extends JFrame {
 
 	public void graphics_setup() {
 
-		setSize(400,400);
+		// setSize(400,400);
 		setLayout(new GridLayout(this.get_matrix_dimension(), this.get_matrix_dimension()));
+
+		for (int i = 0; i < this.get_matrix_dimension(); i++) {
+			int stop = this.get_matrix_dimension();
+			if (i == (this.get_matrix_dimension() - 1)) {
+				stop = this.get_matrix_dimension() - 1;
+			}
+			for (int j = 0; j < stop; j++) {
+				Tile tile = new Tile(current_layout[i][j]);
+				add(tile);
+			}
+		}
+
+		// add a blank tile to mimic an empty space
+		Tile blank = new Tile();
+		add(blank);
+
+		setTitle("8-Puzzle");
+		pack();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
+
 	}
 
 	/*
