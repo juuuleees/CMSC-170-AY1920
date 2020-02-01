@@ -5,17 +5,20 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.awt.GridLayout;
+import java.awt.Dimension;
+import java.awt.Color;
 // import java.awt.event.ActionListener;
 // import java.awt.event.ActionEvent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class Game extends JFrame {
 	
-	private JFrame frame;
+	private final int WINDOW_SIZE = 450;
 	private ArrayList<Tile> tiles = new ArrayList<Tile>();
 	private ArrayList<String> all_moves = new ArrayList<String>();
 	private ArrayList<State> frontier = new ArrayList<State>();
-	private File layout_file = new File("src/puzzle.in");
+	private File layout_file = new File("src/puzzle2.in");
 	private String[][] puzzle_layout;
 	private int[][] current_layout;
 	private int[][] win_condition;
@@ -239,18 +242,24 @@ public class Game extends JFrame {
 	*/
 	public void graphics_setup() {
 
-		setLayout(new GridLayout(this.get_matrix_dimension(), this.get_matrix_dimension()));
+		int dimension = this.get_matrix_dimension();
+		setSize(new Dimension(WINDOW_SIZE, WINDOW_SIZE));
 
-		for (int i = 0; i < this.get_matrix_dimension(); i++) {
-			for (int j = 0; j < this.get_matrix_dimension(); j++) {
-				Tile tile = new Tile(current_layout[i][j], this.get_current_layout());
-				find_adjacent_tiles(tile);
-				add(tile);
+		JPanel main = new JPanel();
+		main.setLayout(new GridLayout(dimension, dimension));
+		main.setSize(new Dimension(WINDOW_SIZE, WINDOW_SIZE));
+		main.setBackground(Color.WHITE);
+
+		for (int i = 0; i < dimension; i++) {
+			for(int j = 0; j < dimension; j++) {
+				Tile tile = new Tile(current_layout[i][j], WINDOW_SIZE/this.get_matrix_dimension());
+				main.add(tile);
 			}
 		}
 
+		add(main);
+
 		setTitle("8-Puzzle");
-		pack();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 
