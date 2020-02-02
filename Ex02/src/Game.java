@@ -7,10 +7,13 @@ import java.io.File;
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import java.awt.Color;
-// import java.awt.event.ActionListener;
-// import java.awt.event.ActionEvent;
+import java.awt.Point;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JButton;
+import javax.swing.BoxLayout;
 
 public class Game extends JFrame {
 	
@@ -18,7 +21,7 @@ public class Game extends JFrame {
 	private ArrayList<Tile> tiles = new ArrayList<Tile>();
 	private ArrayList<String> all_moves = new ArrayList<String>();
 	private ArrayList<State> frontier = new ArrayList<State>();
-	private File layout_file = new File("src/puzzle2.in");
+	private File layout_file = new File("src/puzzle.in");
 	private String[][] puzzle_layout;
 	private int[][] current_layout;
 	private int[][] win_condition;
@@ -182,7 +185,7 @@ public class Game extends JFrame {
 	/*
 		Checks to see if the current board is the winning board.
 	*/
-	public void detect_win_state(int[][] board) {
+	public boolean detect_win_state(int[][] board) {
 
 		boolean u_won = true;
 
@@ -196,6 +199,7 @@ public class Game extends JFrame {
 		}
 
 		this.set_win_status(u_won);
+		return u_won;
 
 	}
 
@@ -204,36 +208,136 @@ public class Game extends JFrame {
 	/*
 		Looks for the position of the empty space on the board
 	*/
-	public int find_empty_space(int[][] layout) {
+	public Point find_empty_space(int[][] layout) {
 		
 		int total_tiles = this.get_matrix_dimension() * this.get_matrix_dimension();
-		int free_space_index = 0;
+		int x = 0;
+		int y = 0;
 
 		for (int i = 0; i < this.get_matrix_dimension(); i++) {
 			for (int j = 0; j < this.get_matrix_dimension(); j++) {
 				if (layout[i][j] == 0) {
+					x = i;
+					y = j;
 					break;
 				}
-				free_space_index++;
 			}
 		}
 
-		return free_space_index;
+		Point location = new Point(x,y);
+		System.out.println(location.toString());
+
+		return location;
 
 	}
 
-	public void BFSearch(State initial) {
+	/*
+		Swaps tiles for the find_results() function.
+	*/
+	public int[][] swapper(int[][] cb, Point loc, String m) {
+		
+		int[][] new_board = new int[this.get_matrix_dimension()][this.get_matrix_dimension()];
+		int holding_cell = 0;
+		int row = (int)loc.getX();
+		int col = (int)loc.getY();
 
-		State current_state = new State();
-		int last_index = 0;
+		for (int i = 0; i < this.get_matrix_dimension(); i++) {
+			for (int j = 0; j < this.get_matrix_dimension(); j++) {
+				new_board[i][j] = cb[i][j];
+			}
+		}
 
-		frontier.add(initial);
+		if(m.equals("U")) {
+			System.out.println("up");
+			new_board[row][col] = new_board[row-1][col];	// 0
+			new_board[row-1][col] = 0;
+		} else if (m.equals("R")) {
+			System.out.println("right");
+			new_board[row][col] = new_board[row][col+1];	// 0
+			new_board[row][col+1] = 0;
+		} else if (m.equals("D")) {
+			System.out.println("down");
+			new_board[row][col] = new_board[row+1][col];	// 0
+			new_board[row+1][col] = 0;
+		} else if (m.equals("L")) {
+			System.out.println("left");
+			new_board[row][col] = new_board[row][col-1];	// 0
+			new_board[row][col-1] = 0;
+		}
 
-		// while(!frontier.isEmpty()) {	
-		// 	last_index =  frontier.size();
-		// 	current_state = frontier.get(last_index);
+		for (int i = 0; i < this.get_matrix_dimension(); i++) {
+			for (int j = 0; j < this.get_matrix_dimension(); j++) {
+				System.out.print(new_board[i][j]);
+			}
+			System.out.println();
+		}
+
+		return new_board;
+
+	}
+
+	public State find_results(State curr, String m) {
+
+		int[][] cb = curr.get_current_board();
+		Point empty_space = curr.get_empty_space_loc();
+
+		int[][] new_board = swapper(cb, empty_space, m);
+		Point updated_es_loc = find_empty_space(new_board);
+
+		State resulting_state = new State(new_board, updated_es_loc, curr, m);
+
+		return resulting_state;
+
+	}
+
+	/*
+		Initiates BFSearch using the board's current configuration.
+
+		2/2/2020: Since graphics are still not interactive, supply different layouts
+				  for testing.
+	*/
+	public State BFSearch() {
+
+		int[][] present_layout = this.get_current_layout();
+		int matrix_size = this.get_matrix_dimension();
+		Point empty_space = this.find_empty_space(present_layout);
+		String previous_move = " ";
+		State winning_state = new State();
+
+		State current_state = new State(present_layout,matrix_size,empty_space,previous_move);
+		int frontier_index = 0;
+
+		frontier.add(current_state);
+
+		while(!frontier.isEmpty()) {	
+
+			current_state = frontier.get(frontier_index);
+			frontier.remove(0);
 			
+			if (detect_win_state(current_state.get_current_board())) {
+				winning_state = current_state;
+				break;
+			} else {
+				System.out.println("not yet");
+				for (String move : current_state.get_allowed_moves()) {
+					System.out.println(move);
+					// swapper(current_state.get_current_board(), current_state.get_empty_space_loc(),move);
+					State next_state = find_results(current_state, move);
+					frontier.add(next_state);
+				}
+				// break;
+			}
+
+		}
+
+		// for (int i = 0; i < this.get_matrix_dimension(); i++) {
+		// 	for (int j = 0; j < this.get_matrix_dimension(); j++) {
+		// 		System.out.println(winning_state.get_current_board()[i][j]);
+		// 	}
+		// 	System.out.println();
 		// }
+
+		return winning_state;
 
 	}
 
@@ -243,21 +347,37 @@ public class Game extends JFrame {
 	public void graphics_setup() {
 
 		int dimension = this.get_matrix_dimension();
-		setSize(new Dimension(WINDOW_SIZE, WINDOW_SIZE));
-
+		setSize(new Dimension(WINDOW_SIZE, WINDOW_SIZE+(WINDOW_SIZE/2)));
+		
 		JPanel main = new JPanel();
-		main.setLayout(new GridLayout(dimension, dimension));
-		main.setSize(new Dimension(WINDOW_SIZE, WINDOW_SIZE));
-		main.setBackground(Color.WHITE);
+		main.setLayout(new BoxLayout(main, BoxLayout.PAGE_AXIS));
+
+		JPanel game = new JPanel();
+		game.setLayout(new GridLayout(dimension, dimension));
+		game.setSize(new Dimension(WINDOW_SIZE, WINDOW_SIZE));
+		game.setBackground(Color.BLACK);
 
 		for (int i = 0; i < dimension; i++) {
 			for(int j = 0; j < dimension; j++) {
 				Tile tile = new Tile(current_layout[i][j], WINDOW_SIZE/this.get_matrix_dimension());
-				main.add(tile);
+				game.add(tile);
 			}
 		}
 
-		add(main);
+		JPanel button_panel = new JPanel();
+		button_panel.setSize(new Dimension(WINDOW_SIZE,WINDOW_SIZE/2));
+		JButton solve_button = new JButton("Solve!");
+		solve_button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("i shall bfs this bitch");
+				BFSearch();
+			}
+		});
+
+		button_panel.add(solve_button);
+		main.add(game);
+		main.add(button_panel);
+		add(main);	
 
 		setTitle("8-Puzzle");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
