@@ -53,6 +53,7 @@ public class Game extends JFrame {
 	public Game() {}
 
 	// methods 
+	//	TODO: check if puzzle is solvable
 
 	/*
 		Build the game layout based on input from puzzle.in.
@@ -182,27 +183,6 @@ public class Game extends JFrame {
 
 	}
 
-	/*
-		Checks to see if the current board is the winning board.
-	*/
-	public boolean detect_win_state(int[][] board) {
-
-		boolean u_won = true;
-
-		for (int i = 0; i < this.get_matrix_dimension(); i++) {
-			for (int j = 0; j < this.get_matrix_dimension(); j++) {
-				if (board[i][j] != this.get_win_condition()[i][j]) {
-					u_won = false;
-					break;
-				}
-			}
-		}
-
-		this.set_win_status(u_won);
-		return u_won;
-
-	}
-
 	// Functions for BFS
 
 	/*
@@ -225,7 +205,7 @@ public class Game extends JFrame {
 		}
 
 		Point location = new Point(x,y);
-		System.out.println(location.toString());
+		// System.out.println(location.toString());
 
 		return location;
 
@@ -248,34 +228,53 @@ public class Game extends JFrame {
 		}
 
 		if(m.equals("U")) {
-			System.out.println("up");
+			// System.out.println("up");
 			new_board[row][col] = new_board[row-1][col];	// 0
 			new_board[row-1][col] = 0;
 		} else if (m.equals("R")) {
-			System.out.println("right");
+			// System.out.println("right");
 			new_board[row][col] = new_board[row][col+1];	// 0
 			new_board[row][col+1] = 0;
 		} else if (m.equals("D")) {
-			System.out.println("down");
+			// System.out.println("down");
 			new_board[row][col] = new_board[row+1][col];	// 0
 			new_board[row+1][col] = 0;
 		} else if (m.equals("L")) {
-			System.out.println("left");
+			// System.out.println("left");
 			new_board[row][col] = new_board[row][col-1];	// 0
 			new_board[row][col-1] = 0;
-		}
-
-		for (int i = 0; i < this.get_matrix_dimension(); i++) {
-			for (int j = 0; j < this.get_matrix_dimension(); j++) {
-				System.out.print(new_board[i][j]);
-			}
-			System.out.println();
 		}
 
 		return new_board;
 
 	}
 
+	/*
+		Checks to see if the current board is the winning board.
+		(GoalTest())
+	*/
+	public boolean detect_win_state(int[][] board) {
+
+		boolean u_won = true;
+
+		for (int i = 0; i < this.get_matrix_dimension(); i++) {
+			for (int j = 0; j < this.get_matrix_dimension(); j++) {
+				if (board[i][j] != this.get_win_condition()[i][j]) {
+					u_won = false;
+					break;
+				}
+			}
+		}
+
+		this.set_win_status(u_won);
+		return u_won;
+
+	}
+
+	/*
+		Returns the resulting state given a move.
+		(Results(s,a))
+	*/
 	public State find_results(State curr, String m) {
 
 		int[][] cb = curr.get_current_board();
@@ -288,6 +287,13 @@ public class Game extends JFrame {
 
 		return resulting_state;
 
+	}
+
+	/*
+		Returns the final state's path cost.
+	*/
+	public int show_path_cost(State s) {
+		return s.get_path_cost();
 	}
 
 	/*
@@ -318,24 +324,26 @@ public class Game extends JFrame {
 				winning_state = current_state;
 				break;
 			} else {
-				System.out.println("not yet");
 				for (String move : current_state.get_allowed_moves()) {
-					System.out.println(move);
-					// swapper(current_state.get_current_board(), current_state.get_empty_space_loc(),move);
 					State next_state = find_results(current_state, move);
 					frontier.add(next_state);
 				}
-				// break;
 			}
 
 		}
 
-		// for (int i = 0; i < this.get_matrix_dimension(); i++) {
-		// 	for (int j = 0; j < this.get_matrix_dimension(); j++) {
-		// 		System.out.println(winning_state.get_current_board()[i][j]);
-		// 	}
-		// 	System.out.println();
-		// }
+		for (int i = 0; i < this.get_matrix_dimension(); i++) {
+			for (int j = 0; j < this.get_matrix_dimension(); j++) {
+				System.out.print(winning_state.get_current_board()[i][j]);
+			}
+			System.out.println();
+		}
+
+		for (String move : winning_state.get_move_path()) {
+			System.out.print(move + " ");
+		}
+
+		winning_state.set_is_final(true);
 
 		return winning_state;
 
@@ -369,7 +377,6 @@ public class Game extends JFrame {
 		JButton solve_button = new JButton("Solve!");
 		solve_button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("i shall bfs this bitch");
 				BFSearch();
 			}
 		});

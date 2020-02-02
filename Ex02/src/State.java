@@ -10,6 +10,7 @@ public class State {
 	private int[][] current_board;
 	private String prev_move;
 	private int matrix_size;
+	private int path_cost;
 	private boolean is_initial;
 	private boolean is_final;
 
@@ -20,6 +21,7 @@ public class State {
 	public int[][] get_current_board() { return this.current_board; }
 	public String get_prev_move() { return this.prev_move; }
 	public int get_matrix_size() { return this.matrix_size; }
+	public int get_path_cost() { return this.path_cost; }
 	public Point get_empty_space_loc() { return this.empty_space_loc; }
 	public boolean get_is_initial() { return this.is_initial; }
 	public boolean get_is_final() { return this.is_final; }
@@ -31,6 +33,7 @@ public class State {
 	public void set_current_board(int[][] cb) { this.current_board = cb; }
 	public void set_prev_move(String pm) { this.prev_move = pm; }
 	public void set_matrix_size(int ms) { this.matrix_size = ms; }
+	public void set_path_cost(int p) { this.path_cost = p; }
 	public void set_empty_space_loc(Point loc) { this.empty_space_loc = loc; }
 	public void set_is_final(boolean f) { this.is_final = f; }
 	public void set_is_initial(boolean i) { this.is_initial = i; }
@@ -52,6 +55,9 @@ public class State {
 		this.set_prev_move(prev);
 		this.set_allowed_moves(this.find_possible_moves());
 		this.set_is_initial(false);
+		this.list_previous_moves(parent);
+		// System.out.println("prev: " + prev);
+		this.get_move_path().add(prev);
 	}
 
 	// methods
@@ -80,6 +86,16 @@ public class State {
 		}
 
 		return moveset;
+
+	}
+
+	public void list_previous_moves(State parent) {
+
+		if (!parent.get_is_initial()) {
+			for (String move : parent.get_move_path()) {
+				this.get_move_path().add(move);
+			}
+		}
 
 	}
 
