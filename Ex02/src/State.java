@@ -56,8 +56,8 @@ public class State {
 		this.set_allowed_moves(this.find_possible_moves());
 		this.set_is_initial(false);
 		this.list_previous_moves(parent);
-		// System.out.println("prev: " + prev);
 		this.get_move_path().add(prev);
+		this.set_path_cost(this.get_move_path().size());
 	}
 
 	// methods

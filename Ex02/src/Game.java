@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.lang.StringBuilder;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.awt.GridLayout;
@@ -21,7 +23,7 @@ public class Game extends JFrame {
 	private ArrayList<Tile> tiles = new ArrayList<Tile>();
 	private ArrayList<String> all_moves = new ArrayList<String>();
 	private ArrayList<State> frontier = new ArrayList<State>();
-	private File layout_file = new File("src/puzzle.in");
+	private File layout_file = new File("src/puzzle4.in");
 	private String[][] puzzle_layout;
 	private int[][] current_layout;
 	private int[][] win_condition;
@@ -297,6 +299,29 @@ public class Game extends JFrame {
 	}
 
 	/*
+		Writes results of BFSearch() to file.
+	*/
+	public void write_path_to_file(State win) {
+
+		try {
+
+			FileWriter write_to_file = new FileWriter(new File("puzzle.out"));
+			PrintWriter print_to_file = new PrintWriter(write_to_file);
+
+			for (String move : win.get_move_path()) {
+				print_to_file.print(move + " ");
+			}
+			
+			print_to_file.print("\n");
+			print_to_file.close();
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+	}
+
+	/*
 		Initiates BFSearch using the board's current configuration.
 
 		2/2/2020: Since graphics are still not interactive, supply different layouts
@@ -304,6 +329,7 @@ public class Game extends JFrame {
 	*/
 	public State BFSearch() {
 
+		ArrayList<State> explored = new ArrayList<State>();
 		int[][] present_layout = this.get_current_layout();
 		int matrix_size = this.get_matrix_dimension();
 		Point empty_space = this.find_empty_space(present_layout);
@@ -321,29 +347,37 @@ public class Game extends JFrame {
 			frontier.remove(0);
 			
 			if (detect_win_state(current_state.get_current_board())) {
+				System.out.println("got it!");
 				winning_state = current_state;
 				break;
 			} else {
-				for (String move : current_state.get_allowed_moves()) {
-					State next_state = find_results(current_state, move);
-					frontier.add(next_state);
+				if (!explored.contains(current_state)) {
+					for (String move : current_state.get_allowed_moves()) {
+						State next_state = find_results(current_state, move);
+						frontier.add(next_state);
+					}
+					explored.add(current_state);
 				}
 			}
 
 		}
 
-		for (int i = 0; i < this.get_matrix_dimension(); i++) {
-			for (int j = 0; j < this.get_matrix_dimension(); j++) {
-				System.out.print(winning_state.get_current_board()[i][j]);
-			}
-			System.out.println();
-		}
+		// uncomment to see win state on console
+		// for (int i = 0; i < this.get_matrix_dimension(); i++) {
+		// 	for (int j = 0; j < this.get_matrix_dimension(); j++) {
+		// 		System.out.print(winning_state.get_current_board()[i][j]);
+		// 	}
+		// 	System.out.println();
+		// }
 
-		for (String move : winning_state.get_move_path()) {
-			System.out.print(move + " ");
-		}
+		// uncomment to see correct path on console
+		// for (String move : winning_state.get_move_path()) {
+		// 	System.out.print(move + " ");
+		// }
 
 		winning_state.set_is_final(true);
+		System.out.println("saving to file...");
+		write_path_to_file(winning_state);
 
 		return winning_state;
 
