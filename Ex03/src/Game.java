@@ -185,7 +185,7 @@ public class Game extends JFrame {
 
 	}
 
-	// Functions for BFS
+	// Functions for BFS and DFS
 
 	/*
 		Looks for the position of the empty space on the board
@@ -293,9 +293,102 @@ public class Game extends JFrame {
 
 	/*
 		Returns the final state's path cost.
+		Also doubles as a function to get g forthe A* algorithm.
 	*/
 	public int show_path_cost(State s) {
 		return s.get_path_cost();
+	}
+
+	/*
+		Compares two given states's board layouts and returns TRUE if they match.
+	*/
+	public boolean compare_boards(State state1, State state2) {
+		
+		int[][] board1 = state1.get_current_board();
+		int[][] board2 = state2.get_current_board();
+		// I admit I'm being a bit lax here. If the two states had different
+		// sizes I'd be screwed.
+		int board_dimension = state1.get_matrix_size();	
+		int tile_count = board_dimension * board_dimension;
+		int matching_tiles = 0;
+		boolean boards_match = true;
+
+		for (int i = 0; i < board_dimension; i++) {
+			for (int j = 0; j < board_dimension; j++) {
+				if (board1[i][j] == board2[i][j]) {
+					matching_tiles++;
+				}
+			}
+		}
+
+		if (matching_tiles != tile_count) {
+			boards_match = false;
+		}
+
+		return boards_match;
+
+	}
+
+	// Basic functions (in pseudocode) for A* algorithm since apparently Windows can't print a string
+	// while while running the GUI. Why is Windows like this. Now I have to code blind.
+
+	public int compute_h(State curr, int[][] win_cond) {
+		int tile_value = curr.get_tile_value();
+		/*
+			Chika na lang nga. Gusto ko mag-Minecraft, naiirita ako na di kaya ng
+			Windows magprint to console.
+
+			1) Find the 2D array index that has a value that matches tile_value.
+			2) Save that index as a Point. Oo, alam nating lahat kung nasaan yun but the computer
+			   not. Be patient with the baby. Let's call this Point Bae.
+			3) Check that index in curr's current_board. Save the index in another Point.
+			4) If the value in that index doesn't match tile_value, jump to (5)
+			5) Use curr's Point and Bae to compute the manhattan distance and save it as h_value.
+			6) Return h_value.
+
+			This is the basic guideline since again, di kaya ni Windows mag-console log at pakita ng GUI.
+			Amazing. Ubuntu master race.
+		*/
+	}
+
+	/*
+		Computes for the value of f. Note: Move this to State.java so it can initialize its own f value.
+	*/
+	public int compute_f(int g, int h) {
+		return g + h;
+	}
+
+	public void remove_min_f(ArrayList<State> frontier) {
+
+		int min_f = 0;
+		int min_f_index = 0;
+
+		for (State state : frontier) {
+			if (state.get_f_value() < min_f) {
+				min_f = state.get_f_value();
+				min_f_index = frontier.indexOf(state);
+			}
+		}
+
+		frontier.remove(min_f_index);
+
+		// This syntax may be wrong. Check by running and debugging on Ubuntu.
+
+	}
+
+	public void AStar() {
+
+		ArrayList<State> frontier = new ARrayList<State>();
+		ArrayList<State> closed_list = new ARrayList<State>();
+
+
+		// Again, pseudocode because Windows cAN'T PRINT TO CONSOLE
+		/*
+
+			
+
+		*/
+
 	}
 
 	/*
@@ -339,25 +432,137 @@ public class Game extends JFrame {
 		State current_state = new State(present_layout,matrix_size,empty_space,previous_move);
 		int frontier_index = 0;
 
+		boolean matches_previous_state = false;
+
 		frontier.add(current_state);
 
+		System.out.println("nagstart na ba");
 		while(!frontier.isEmpty()) {	
 
 			current_state = frontier.get(frontier_index);
 			frontier.remove(0);
-			
+			System.out.println("di ko makita kung nagstart na ba o ano");
 			if (detect_win_state(current_state.get_current_board())) {
 				System.out.println("got it!");
 				winning_state = current_state;
 				break;
 			} else {
-				if (!explored.contains(current_state)) {
+				Ssytem.out.println("Starting new algo implementation...");
+				if (explored.isEmpty()) {
 					for (String move : current_state.get_allowed_moves()) {
 						State next_state = find_results(current_state, move);
 						frontier.add(next_state);
 					}
 					explored.add(current_state);
+				} else {
+					for (State previously_explored : explored) {
+						if (!compare_boards(current_state,previously_explored)) {
+							System.out.println("boards dun maaaaatch");
+							matches_previous_state = false;
+							break;
+						}
+					}
 				}
+				// for (State previously_explored : explored) {
+				// 	if (!compare_boards(current_state,previously_explored)) {
+				// 		System.out.println("boards dun maaaaatch");
+				// 		matches_previous_state = false;
+				// 		break;
+				// 	}
+				// }
+				// if (matches_previous_state) {
+				// 	for (String move : current_state.get_allowed_moves()) {
+				// 		State next_state = find_results(current_state, move);
+				// 		frontier.add(next_state);
+				// 	}
+				// 	explored.add(current_state);
+				// }
+			}
+
+		}
+
+		// uncomment to see win state on console
+		// for (int i = 0; i < this.get_matrix_dimension(); i++) {
+		// 	for (int j = 0; j < this.get_matrix_dimension(); j++) {
+		// 		System.out.print(winning_state.get_current_board()[i][j]);
+		// 	}
+		// 	System.out.println();
+		// }
+
+		// uncomment to see correct path on console
+		// for (String move : winning_state.get_move_path()) {
+		// 	System.out.print(move + " ");
+		// }
+
+		winning_state.set_is_final(true);
+		System.out.println("saving to file...");
+		write_path_to_file(winning_state);
+
+		return winning_state;
+
+	}
+
+	/*
+		Initiates DFSearch using the board's current configuration.
+		Copy pasted from previous BFSearch(), but edited to fit DFSearch algorithm description.
+	*/
+	public State DFSearch() {
+
+		ArrayList<State> explored = new ArrayList<State>();
+		int[][] present_layout = this.get_current_layout();
+		int matrix_size = this.get_matrix_dimension();
+		Point empty_space = this.find_empty_space(present_layout);
+		String previous_move = " ";
+		State winning_state = new State();
+
+		State current_state = new State(present_layout,matrix_size,empty_space,previous_move);
+		int frontier_index = 0;
+
+		boolean matches_previous_state = false;
+
+		frontier.add(current_state);
+
+		System.out.println("nagstart na ba");
+		while(!frontier.isEmpty()) {	
+
+			current_state = frontier.get(frontier.sizeOf());
+			frontier.remove(frontier.sizeOf());
+			System.out.println("di ko makita kung nagstart na ba o ano");
+			if (detect_win_state(current_state.get_current_board())) {
+				System.out.println("got it!");
+				winning_state = current_state;
+				break;
+			} else {
+				Ssytem.out.println("Starting new algo implementation...");
+				if (explored.isEmpty()) {
+					for (String move : current_state.get_allowed_moves()) {
+						State next_state = find_results(current_state, move);
+						frontier.add(next_state);
+					}
+					explored.add(current_state);
+				} else {
+					for (State previously_explored : explored) {
+						if (!compare_boards(current_state,previously_explored)) {
+							System.out.println("boards dun maaaaatch");
+							matches_previous_state = false;
+							break;
+						}
+					}
+				}
+				// for (State previously_explored : explored) {
+				// 	if (!compare_boards(current_state,previously_explored)) {
+				// 		System.out.println("boards dun maaaaatch");
+				// 		matches_previous_state = false;
+				// 		break;
+				// 	}
+				// }
+				// if (matches_previous_state) {
+				// 	for (String move : current_state.get_allowed_moves()) {
+				// 		State next_state = find_results(current_state, move);
+				// 		frontier.add(next_state);
+				// 	}
+				// 	explored.add(current_state);
+				// }
 			}
 
 		}
@@ -406,16 +611,31 @@ public class Game extends JFrame {
 			}
 		}
 
-		JPanel button_panel = new JPanel();
-		button_panel.setSize(new Dimension(WINDOW_SIZE,WINDOW_SIZE/2));
+		JPanel solve_button_panel = new JPanel();
+		solve_button_panel.setSize(new Dimension(WINDOW_SIZE,WINDOW_SIZE/2));
+
+		JPanel options_panel = new JPanel();
+		options_panel.setVisible(false);					// should become visible if user clicks solve button 
+
 		JButton solve_button = new JButton("Solve!");
+		JButton bfs_solve = new JButton("BFSearch");
+		JButton dfs_solve = new JButton("DFSearch");
+		JButton a_star_solve = new JButton("A*");
+
+		options_panel.add(bfs_solve);
+		options_panel.add(dfs_solve);
+		options_panel.add(a_star_solve);
+
 		solve_button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				BFSearch();
+				System.out.println("i done been clicked yo");
+				options_panel.setVisible(true);
 			}
 		});
 
-		button_panel.add(solve_button);
+		solve_button_panel.add(solve_button);
+		solve_button_panel.add(options_panel);
+
 		main.add(game);
 		main.add(button_panel);
 		add(main);	
@@ -430,6 +650,7 @@ public class Game extends JFrame {
 		Sets up backend.
 	*/
 	public void setup_backend() {
+		System.out.println("hoy windows print me");
 		read_game_layout();
 		make_win_condition();
 	}
