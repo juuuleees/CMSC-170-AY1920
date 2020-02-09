@@ -93,8 +93,10 @@ public class State {
 
 		if (!parent.get_is_initial()) {
 			for (String move : parent.get_move_path()) {
+				// System.out.print(move);
 				this.get_move_path().add(move);
 			}
+			// System.out.println();
 		}
 
 	}

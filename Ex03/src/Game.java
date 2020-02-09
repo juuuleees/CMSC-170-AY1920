@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Scanner;
 import java.lang.StringBuilder;
 import java.io.FileReader;
@@ -6,6 +7,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.File;
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import java.awt.Color;
@@ -28,6 +30,7 @@ public class Game extends JFrame {
 	private int[][] current_layout;
 	private int[][] win_condition;
 	private int matrix_dimension = 0;
+	private boolean solvable;
 	private boolean win_status;
 
 	// getters
@@ -38,6 +41,7 @@ public class Game extends JFrame {
 	public int[][] get_current_layout() { return this.current_layout; }
 	public int[][] get_win_condition() { return this.win_condition; }
 	public int get_matrix_dimension() { return this.matrix_dimension; }
+	public boolean get_solvable() { return this.solvable; }
 	public boolean get_win_status() { return this.win_status; }
 
 	// setters
@@ -49,6 +53,7 @@ public class Game extends JFrame {
 	public void set_win_condition(int[][] w) { this.win_condition = w; }
 	public void set_matrix_dimension(int md) { this.matrix_dimension = md; }
 	public void set_win_state(boolean w) { this.win_status = w; }
+	public void set_solvable(boolean sol) { this.solvable = sol; }
 	public void set_win_status(boolean win) { this.win_status = win; }
 
 	// constructors
@@ -97,6 +102,44 @@ public class Game extends JFrame {
 
 		} catch (Exception e) {
 			System.out.println(e);
+		}
+
+	}
+
+	/*
+		Check if the puzzle is solvable using inversions.
+	*/
+	public void check_solvability(int[][] puzzle) {
+
+		ArrayList<Integer> all_inversions = new ArrayList<Integer>();
+		int matrix_size = this.get_matrix_dimension();
+		int accounted = 0;
+		int inv_count = 0;
+		int total_inv = 0;
+
+		for (int i = 0; i < matrix_size; i++) {
+			for (int j = 0; j < matrix_size; j++) {
+				all_inversions.add(puzzle[i][j]);
+			}
+		}
+
+		for (Integer value : all_inversions) {
+			
+			for (int k = accounted; k < all_inversions.size(); k++) {
+				if ((value > all_inversions.get(k)) && (value != 0)
+					&& (all_inversions.get(k) != 0)) {
+					inv_count++;
+				}
+			}
+
+			total_inv += inv_count;
+			accounted++;
+			inv_count = 0;
+
+		}
+		
+		if (total_inv%2 == 0) {
+			this.set_solvable(true);
 		}
 
 	}
@@ -332,8 +375,8 @@ public class Game extends JFrame {
 	// Basic functions (in pseudocode) for A* algorithm since apparently Windows can't print a string
 	// while while running the GUI. Why is Windows like this. Now I have to code blind.
 
-	public int compute_h(State curr, int[][] win_cond) {
-		int tile_value = curr.get_tile_value();
+	// public int compute_h(State curr, int[][] win_cond) {
+
 		/*
 			Chika na lang nga. Gusto ko mag-Minecraft, naiirita ako na di kaya ng
 			Windows magprint to console.
@@ -349,7 +392,7 @@ public class Game extends JFrame {
 			This is the basic guideline since again, di kaya ni Windows mag-console log at pakita ng GUI.
 			Amazing. Ubuntu master race.
 		*/
-	}
+	// }
 
 	/*
 		Computes for the value of f. Note: Move this to State.java so it can initialize its own f value.
@@ -358,28 +401,28 @@ public class Game extends JFrame {
 		return g + h;
 	}
 
-	public void remove_min_f(ArrayList<State> frontier) {
+	// public void remove_min_f(ArrayList<State> frontier) {
 
-		int min_f = 0;
-		int min_f_index = 0;
+	// 	int min_f = 0;
+	// 	int min_f_index = 0;
 
-		for (State state : frontier) {
-			if (state.get_f_value() < min_f) {
-				min_f = state.get_f_value();
-				min_f_index = frontier.indexOf(state);
-			}
-		}
+	// 	for (State state : frontier) {
+	// 		if (state.get_f_value() < min_f) {
+	// 			min_f = state.get_f_value();
+	// 			min_f_index = frontier.indexOf(state);
+	// 		}
+	// 	}
 
-		frontier.remove(min_f_index);
+	// 	frontier.remove(min_f_index);
 
-		// This syntax may be wrong. Check by running and debugging on Ubuntu.
+	// 	// This syntax may be wrong. Check by running and debugging on Ubuntu.
 
-	}
+	// }
 
 	public void AStar() {
 
-		ArrayList<State> frontier = new ARrayList<State>();
-		ArrayList<State> closed_list = new ARrayList<State>();
+		ArrayList<State> frontier = new ArrayList<State>();
+		ArrayList<State> closed_list = new ArrayList<State>();
 
 
 		// Again, pseudocode because Windows cAN'T PRINT TO CONSOLE
@@ -422,6 +465,8 @@ public class Game extends JFrame {
 	*/
 	public State BFSearch() {
 
+		this.check_solvability(this.get_current_layout());
+
 		ArrayList<State> explored = new ArrayList<State>();
 		int[][] present_layout = this.get_current_layout();
 		int matrix_size = this.get_matrix_dimension();
@@ -432,51 +477,68 @@ public class Game extends JFrame {
 		State current_state = new State(present_layout,matrix_size,empty_space,previous_move);
 		int frontier_index = 0;
 
-		boolean matches_previous_state = false;
+		boolean not_in_explored = false;
 
 		frontier.add(current_state);
 
-		System.out.println("nagstart na ba");
 		while(!frontier.isEmpty()) {	
 
 			current_state = frontier.get(frontier_index);
 			frontier.remove(0);
-			System.out.println("di ko makita kung nagstart na ba o ano");
+			// System.out.println("\nfrontier: " + frontier.size());
+
+			// for (int i = 0; i < matrix_size; i++) {
+			// 	for (int j = 0; j < matrix_size; j++) {
+			// 		System.out.print(current_state.get_current_board()[i][j]);
+			// 	}
+			// 	System.out.println();
+			// }
+			// System.out.println();
+
+
 			if (detect_win_state(current_state.get_current_board())) {
 				System.out.println("got it!");
 				winning_state = current_state;
 				break;
 			} else {
-				Ssytem.out.println("Starting new algo implementation...");
 				if (explored.isEmpty()) {
 					for (String move : current_state.get_allowed_moves()) {
 						State next_state = find_results(current_state, move);
 						frontier.add(next_state);
 					}
-					explored.add(current_state);
+					// explored.add(current_state);
+					// System.out.println("\nfrontier: " + frontier.size());
+					// System.out.println("explored: " + explored.size());
 				} else {
 					for (State previously_explored : explored) {
-						if (!compare_boards(current_state,previously_explored)) {
-							System.out.println("boards dun maaaaatch");
-							matches_previous_state = false;
+						boolean matched_state = compare_boards(current_state,previously_explored);
+						if (matched_state == false) {
+							// System.out.println("matched state: " + matched_state + " blehp");
+							not_in_explored = true;
+						} else {
+							// System.out.println("matched state: " + matched_state);
+							not_in_explored = false;
 							break;
 						}
 					}
+
+					// System.out.println("\nfrontier: " + frontier.size());
+					// System.out.println("explored: " + explored.size());
+					if (not_in_explored) {
+						// System.out.println("current state is not in <explored>");
+						for (String move : current_state.get_allowed_moves()) {
+							State next_state = find_results(current_state, move);
+							frontier.add(next_state);
+						}
+						explored.add(current_state);
+						// System.out.println("\nfrontier: " + frontier.size());
+						// System.out.println("explored: " + explored.size());
+					} else {
+						// System.out.println("skipping matched state...");
+					}
+
 				}
-				// for (State previously_explored : explored) {
-				// 	if (!compare_boards(current_state,previously_explored)) {
-				// 		System.out.println("boards dun maaaaatch");
-				// 		matches_previous_state = false;
-				// 		break;
-				// 	}
-				// }
-				// if (matches_previous_state) {
-				// 	for (String move : current_state.get_allowed_moves()) {
-				// 		State next_state = find_results(current_state, move);
-				// 		frontier.add(next_state);
-				// 	}
-				// 	explored.add(current_state);
-				// }
+
 			}
 
 		}
@@ -525,15 +587,15 @@ public class Game extends JFrame {
 		System.out.println("nagstart na ba");
 		while(!frontier.isEmpty()) {	
 
-			current_state = frontier.get(frontier.sizeOf());
-			frontier.remove(frontier.sizeOf());
+			current_state = frontier.get(frontier.size());
+			frontier.remove(frontier.size());
 			System.out.println("di ko makita kung nagstart na ba o ano");
 			if (detect_win_state(current_state.get_current_board())) {
 				System.out.println("got it!");
 				winning_state = current_state;
 				break;
 			} else {
-				Ssytem.out.println("Starting new algo implementation...");
+				System.out.println("Starting new algo implementation...");
 				if (explored.isEmpty()) {
 					for (String move : current_state.get_allowed_moves()) {
 						State next_state = find_results(current_state, move);
@@ -613,6 +675,7 @@ public class Game extends JFrame {
 
 		JPanel solve_button_panel = new JPanel();
 		solve_button_panel.setSize(new Dimension(WINDOW_SIZE,WINDOW_SIZE/2));
+		// solve_button_panel.setLayout(new BoxLayout(solve_button_panel, BoxLayout.PAGE_AXIS));
 
 		JPanel options_panel = new JPanel();
 		options_panel.setVisible(false);					// should become visible if user clicks solve button 
@@ -628,8 +691,14 @@ public class Game extends JFrame {
 
 		solve_button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("i done been clicked yo");
 				options_panel.setVisible(true);
+				solve_button.setVisible(false);
+			}
+		});
+
+		bfs_solve.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				BFSearch();
 			}
 		});
 
@@ -637,7 +706,7 @@ public class Game extends JFrame {
 		solve_button_panel.add(options_panel);
 
 		main.add(game);
-		main.add(button_panel);
+		main.add(solve_button_panel);
 		add(main);	
 
 		setTitle("8-Puzzle");
@@ -650,7 +719,6 @@ public class Game extends JFrame {
 		Sets up backend.
 	*/
 	public void setup_backend() {
-		System.out.println("hoy windows print me");
 		read_game_layout();
 		make_win_condition();
 	}
