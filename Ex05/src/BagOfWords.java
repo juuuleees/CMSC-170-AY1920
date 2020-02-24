@@ -1,0 +1,60 @@
+import java.util.LinkedHashMap;
+import java.lang.StringBuilder;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.File;
+
+public class BagOfWords {
+	
+	private LinkedHashMap<String, Float> word_bag = new LinkedHashMap<String, Float>();
+	private File input_file;
+	private File output_file = new File("output.txt");
+	private String message = null;
+	private float word_count = 0;
+
+	// getters
+	public LinkedHashMap get_word_bag() { return this.word_bag; }
+	public File get_input_file() { return this.input_file; }
+	public File get_output_file() { return this.output_file; }
+	public String get_message() { return this.message; }
+	public float get_word_count() { return this.word_count; }
+
+	// setters
+	public void set_word_bag(LinkedHashMap<String, Float> wb) { this.word_bag = wb; }
+	public void set_input_file(File i) { this.input_file = i; }
+	public void set_output_file(File o) { this.output_file = o; }
+	public void set_message(String m) { this.message = m; }
+	public void set_word_count(float wc) { this.word_count = wc; }
+
+	// methods
+	/*
+		Saves file contents as a String.
+	*/
+	public String read_file_contents(File in_file) {
+
+		String contents = null;
+
+		try {
+
+			if (in_file.isFile()) {
+				BufferedReader message_reader = new BufferedReader(new FileReader(in_file));
+				StringBuilder message_string = new StringBuilder();
+
+				while ((message = message_reader.readLine()) != null) {
+					message_string.append(message_string + " ");
+				}
+
+				contents = message_string.toString().toLowerCase().replaceAll("[^A-Za-z0-9\r ]", "");
+			}
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		return contents;
+
+	}
+	
+}

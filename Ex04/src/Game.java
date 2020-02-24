@@ -199,7 +199,7 @@ public class Game extends JFrame {
 			}	
 		}
 
-		t.set_adjacent_tiles(adj);  
+		t.set_adjacent_tiles(adj);
 
 	}
 
