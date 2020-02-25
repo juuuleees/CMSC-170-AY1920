@@ -1,9 +1,11 @@
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.lang.StringBuilder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.io.File;
 
 public class BagOfWords {
@@ -55,7 +57,6 @@ public class BagOfWords {
 				}
 
 				contents = message_string.toString().toLowerCase().replaceAll("[^A-Za-z0-9\r ]", "");
-				// System.out.println("contents: " + contents);
 
 				message_reader.close();
 
@@ -66,6 +67,27 @@ public class BagOfWords {
 		}
 
 		return contents;
+
+	}
+
+
+	public void write_to_file(LinkedHashMap<String, Float> bag) {
+		
+		try {
+
+			ArrayList<String> words = new ArrayList<String>(bag.keySet());
+			FileWriter write = new FileWriter(output_file);
+			PrintWriter print = new PrintWriter(write);
+
+			for (String word : words) {
+				print.print(word + " " + bag.get(word) + "\n");
+			}
+
+			print.close();
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 
 	}
 
@@ -81,14 +103,19 @@ public class BagOfWords {
 
 			String[] word_array = sentence.split(" ");
 			for (String word : word_array) {
-				System.out.println(word);
+				
 				if (!bag.containsKey(word)) {
 					bag.put(word, 1f);
 				} else {
 					bag.put(word, bag.get(word)+1f);
 				}
 				all_words++;
+				
 			}
+
+			this.set_word_count(all_words);
+
+			write_to_file(bag);
 
 		} catch (Exception e) {
 			System.out.println(e);

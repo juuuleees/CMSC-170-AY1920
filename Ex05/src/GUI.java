@@ -19,8 +19,8 @@ import java.io.File;
 public class GUI extends JFrame {
 	
 	private final JFileChooser file_chooser = new JFileChooser("inputs");
-	private final int WINDOW_WIDTH = 300;
-	private final int WINDOW_LENGTH = 450;
+	private final int WINDOW_WIDTH = 500;
+	private final int WINDOW_LENGTH = 550;
 	private final String WORDS_HEADER = "Word";
 	private final String FREQUENCY_HEADER = "Frequency";
 	private BagOfWords word_bag;
@@ -45,8 +45,6 @@ public class GUI extends JFrame {
 
 	// methods
 	public void graphics_setup() {
-
-		setSize(new Dimension(WINDOW_WIDTH, WINDOW_LENGTH));
 
 		JPanel main = new JPanel();
 		main.setLayout(new BoxLayout(main, BoxLayout.PAGE_AXIS));
@@ -89,10 +87,14 @@ public class GUI extends JFrame {
 				headers.add(WORDS_HEADER);
 				headers.add(FREQUENCY_HEADER);
 
+				dict_size.setText(Integer.toString(new_word_bag.get_word_bag().size()));
+				total_word_count.setText(String.valueOf(new_word_bag.get_word_count()));
+
 				JTable word_table = new JTable(row_data, headers);
 				JScrollPane scrollable_table = new JScrollPane(word_table);
 
 				words_and_counts.add(scrollable_table);
+				setSize(new Dimension(WINDOW_WIDTH, WINDOW_LENGTH));
 				words_and_counts.setVisible(true);
 
 			}
@@ -104,6 +106,7 @@ public class GUI extends JFrame {
 
 		add(main);
 
+		pack();
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -114,12 +117,13 @@ public class GUI extends JFrame {
 		Vector<Vector> master_vector = new Vector<Vector>();
 		LinkedHashMap<String, Float> the_bag = bag.get_word_bag();
 		ArrayList<String> words = new ArrayList<String>(the_bag.keySet());
-		Vector<String> word_key = new Vector<String>();
-		Vector<Float> frequency_vec = new Vector<Float>();
 
 		for (String word : words) {
 
 			Vector<Vector> values_vec = new Vector<Vector>();
+			Vector<String> word_key = new Vector<String>();
+			Vector<Float> frequency_vec = new Vector<Float>();
+
 			float frequency = the_bag.get(word);
 
 			word_key.add(word);
@@ -129,10 +133,6 @@ public class GUI extends JFrame {
 			values_vec.add(frequency_vec);
 
 			master_vector.add(values_vec);
-
-			word_key.clear();
-			frequency_vec.clear();
-			values_vec.clear();
 
 		}
 
