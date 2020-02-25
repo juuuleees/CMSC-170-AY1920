@@ -11,21 +11,34 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Vector;
+import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.io.File;
-// remember to specify which things you're importing
 
 public class GUI extends JFrame {
 	
+	private final JFileChooser file_chooser = new JFileChooser("inputs");
 	private final int WINDOW_WIDTH = 300;
 	private final int WINDOW_LENGTH = 450;
-	private final JFileChooser file_chooser = new JFileChooser("inputs");
+	private final String WORDS_HEADER = "Word";
+	private final String FREQUENCY_HEADER = "Frequency";
+	private BagOfWords word_bag;
+	private Vector cleaned_bag;
 	private File chosen_file;
+	private int bag_size;
 
 	// getters
+	public BagOfWords get_word_bag() { return this.word_bag; }
+	public Vector get_cleaned_bag() { return this.cleaned_bag; }
 	public File get_chosen_file() { return this.chosen_file; }
+	public int get_bag_size() { return this.bag_size; }
 
 	// setters
+	public void set_word_bag(BagOfWords b) { this.word_bag = b; }
+	public void set_cleaned_bag(Vector cb) { this.cleaned_bag = cb; }
 	public void set_chosen_file(File cf) { this.chosen_file = cf; }
+	public void set_bag_size(int s) { this.bag_size = s; }
 
 	// constructor
 	public GUI() {}
@@ -69,7 +82,14 @@ public class GUI extends JFrame {
 					System.out.println("file set.");
 				}
 
-				JTable word_table = new JTable(2,2);
+				BagOfWords new_word_bag = new BagOfWords(chosen_file);
+				Vector<Vector> row_data = clean_for_table(new_word_bag);
+				Vector<String> headers = new Vector<String>();
+
+				headers.add(WORDS_HEADER);
+				headers.add(FREQUENCY_HEADER);
+
+				JTable word_table = new JTable(row_data, headers);
 				JScrollPane scrollable_table = new JScrollPane(word_table);
 
 				words_and_counts.add(scrollable_table);
@@ -86,6 +106,37 @@ public class GUI extends JFrame {
 
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+	}
+
+	public Vector<Vector> clean_for_table(BagOfWords bag) {
+
+		Vector<Vector> master_vector = new Vector<Vector>();
+		LinkedHashMap<String, Float> the_bag = bag.get_word_bag();
+		ArrayList<String> words = new ArrayList<String>(the_bag.keySet());
+		Vector<String> word_key = new Vector<String>();
+		Vector<Float> frequency_vec = new Vector<Float>();
+
+		for (String word : words) {
+
+			Vector<Vector> values_vec = new Vector<Vector>();
+			float frequency = the_bag.get(word);
+
+			word_key.add(word);
+			frequency_vec.add(frequency);
+
+			values_vec.add(word_key);
+			values_vec.add(frequency_vec);
+
+			master_vector.add(values_vec);
+
+			word_key.clear();
+			frequency_vec.clear();
+			values_vec.clear();
+
+		}
+
+		return master_vector;
 
 	}
 

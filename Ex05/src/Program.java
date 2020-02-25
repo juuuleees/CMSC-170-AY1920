@@ -9,7 +9,6 @@ import java.io.File;
 public class Program {
 
 	private GUI ui = new GUI();
-	private BagOfWords bag = new BagOfWords();
 
 	// methods
 	public void run() {
