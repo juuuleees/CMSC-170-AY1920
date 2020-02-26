@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import javax.swing.BoxLayout;
+import javax.swing.table.DefaultTableModel;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
@@ -69,6 +70,10 @@ public class GUI extends JFrame {
 		word_bag_details.add(total_word_count);
 
 		JPanel words_and_counts = new JPanel();
+		JTable word_table = new JTable();
+		JScrollPane scrollable_table = new JScrollPane(word_table);
+		words_and_counts.add(scrollable_table);
+
 		words_and_counts.setVisible(false);
 
 		select.addActionListener(new ActionListener() {
@@ -90,11 +95,11 @@ public class GUI extends JFrame {
 				dict_size.setText(Integer.toString(new_word_bag.get_word_bag().size()));
 				total_word_count.setText(String.valueOf(new_word_bag.get_word_count()));
 
-				JTable word_table = new JTable(row_data, headers);
-				JScrollPane scrollable_table = new JScrollPane(word_table);
-
-				words_and_counts.add(scrollable_table);
+				DefaultTableModel table_data = new DefaultTableModel(row_data, headers);
+				
+				word_table.setModel(table_data);
 				setSize(new Dimension(WINDOW_WIDTH, WINDOW_LENGTH));
+				
 				words_and_counts.setVisible(true);
 
 			}

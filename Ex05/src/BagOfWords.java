@@ -70,7 +70,9 @@ public class BagOfWords {
 
 	}
 
-
+	/*
+		Writes contents of hashmap to file.
+	*/
 	public void write_to_file(LinkedHashMap<String, Float> bag) {
 		
 		try {
