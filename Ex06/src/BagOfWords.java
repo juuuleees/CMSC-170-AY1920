@@ -34,7 +34,6 @@ public class BagOfWords {
 	public BagOfWords() {}
 	public BagOfWords(File in) {
 		this.set_message(read_file_contents(in));
-		this.set_word_bag(bagger(this.get_message()));
 	}
 
 	// methods
@@ -96,7 +95,7 @@ public class BagOfWords {
 	/*
 		Count the words.
 	*/
-	public LinkedHashMap<String, Float> bagger(String sentence) {
+	public void bagger(String sentence) {
 
 		LinkedHashMap<String, Float> bag = this.get_word_bag();
 		float all_words = 0;
@@ -117,13 +116,11 @@ public class BagOfWords {
 
 			this.set_word_count(all_words);
 
-			write_to_file(bag);
+			// write_to_file(bag);
 
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-
-		return bag;
 
 	}
 	
