@@ -14,6 +14,7 @@ public class BagOfWords {
 	private File input_file;
 	private File output_file = new File("output.txt");
 	private String message = null;
+	private float dict_size;
 	private float word_count = 0;
 
 	// getters
@@ -21,6 +22,7 @@ public class BagOfWords {
 	public File get_input_file() { return this.input_file; }
 	public File get_output_file() { return this.output_file; }
 	public String get_message() { return this.message; }
+	public float get_dict_size() { return this.dict_size; }
 	public float get_word_count() { return this.word_count; }
 
 	// setters
@@ -28,6 +30,7 @@ public class BagOfWords {
 	public void set_input_file(File i) { this.input_file = i; }
 	public void set_output_file(File o) { this.output_file = o; }
 	public void set_message(String m) { this.message = m; }
+	public void set_dict_size(float ds) { this.dict_size = ds; }
 	public void set_word_count(float wc) { this.word_count = wc; }
 
 	// constructor
@@ -99,6 +102,7 @@ public class BagOfWords {
 
 		LinkedHashMap<String, Float> bag = this.get_word_bag();
 		float all_words = 0;
+		float grand_total = 0;
 
 		try {
 
@@ -111,10 +115,14 @@ public class BagOfWords {
 					bag.put(word, bag.get(word)+1f);
 				}
 				all_words++;
-				
 			}
 
-			this.set_word_count(all_words);
+			for (String word_key : bag.keySet()) {
+				grand_total = grand_total + bag.get(word_key);
+			}
+
+			this.set_dict_size(all_words);
+			this.set_word_count(grand_total);
 
 			// write_to_file(bag);
 

@@ -7,7 +7,7 @@ import java.text.DecimalFormat;
 public class SpamBag extends BagOfWords {
 	
 	private static float PROBABILITY_THRESHOLD = 0.50f;
-	private static DecimalFormat four_places = new DecimalFormat("0.0000");
+	private static DecimalFormat five_places = new DecimalFormat("0.00000");
 	private File spam_folder;
 
 	// getters
@@ -33,42 +33,15 @@ public class SpamBag extends BagOfWords {
 			bagger(spam_string);
 		}
 
+		System.out.println("Total spam size: " + this.get_dict_size());
 		System.out.println("Total spam words: " + this.get_word_count());
 
-		// uncomment to see ham bag contents in terminal
+
+		// uncomment to see spam bag contents in terminal
 		// Set<String> entries = bag.keySet();
 		// for (String entry : entries) {
 		// 	System.out.println(entry + ": " + bag.get(entry));
 		// }
 	}
-
-	// methods for computation
-
-	/*
-		Computes the value of P(W_n|Spam) for each word in the bag and returns
-		an ArrayList containing all the values.
-	*/
-	public ArrayList<Float> compute_word_probabilities() {
-
-		ArrayList<Float> probabilities = new ArrayList<Float>();
-		LinkedHashMap<String, Float> ham_bag = this.get_word_bag();
-		float grand_total = this.get_word_count();
-
-		Set<String> keys = ham_bag.keySet();
-
-		for (String key : keys) {
-
-			probabilities.add(Float.parseFloat(four_places.format(ham_bag.get(key) / grand_total)));
-
-		}
-
-		return probabilities;
-
-	}
-
-	/*
-		Computes the value of P(message|Spam).
-	*/
-	// public float msg_given_spam(ArrayList<Float> wps) {}
 
 }

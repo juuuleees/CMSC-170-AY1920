@@ -20,10 +20,15 @@ import java.io.File;
 public class GUI extends JFrame {
 	
 	private final JFileChooser file_chooser = new JFileChooser("data");
-	private final int WINDOW_WIDTH = 1200;
+	private final int WINDOW_WIDTH = 1700;
 	private final int WINDOW_LENGTH = 600;
+	private final int TABLE_WIDTH = 250;
+	private final int TABLE_LENGTH = 400;
 	private final String WORDS_HEADER = "Word";
 	private final String FREQUENCY_HEADER = "Frequency";
+	private final String FILENAME_HEADER = "Filename";
+	private final String CLASS_HEADER = "Class";
+	private final String P_SPAM_HEADER = "P(Spam)";
 	private SpamBag new_spam;
 	private HamBag new_ham;
 	private Classifier classifier;
@@ -78,6 +83,7 @@ public class GUI extends JFrame {
 
 		JTable spam_table = new JTable();
 		JScrollPane scrollable_spam = new JScrollPane(spam_table);
+		scrollable_spam.setSize(TABLE_WIDTH, TABLE_LENGTH);
 
 		spam_labels.add(total_spam_label);
 		spam_labels.add(spam_bag_size);
@@ -85,7 +91,7 @@ public class GUI extends JFrame {
 		spam_details.add(scrollable_spam);
 		spam_details.add(spam_labels);
 
-		spam_details.setVisible(false);
+		// spam_details.setVisible(false);
 
 		sfolder_select.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -104,7 +110,17 @@ public class GUI extends JFrame {
 				spam_bag_size.setText(spam_total);
 				spam_bag_size.setEditable(false);
 
-				spam_details.setVisible(true);
+				// for the table
+				Vector<Vector> spam_row_data = clean_for_table(new_spam);
+				Vector<String> spam_headers = new Vector<String>();
+
+				spam_headers.add(WORDS_HEADER);
+				spam_headers.add(FREQUENCY_HEADER);
+
+				DefaultTableModel spam_table_data = new DefaultTableModel(spam_row_data, spam_headers);
+				spam_table.setModel(spam_table_data);
+
+				// spam_details.setVisible(true);
 
 			}
 		});
@@ -126,6 +142,7 @@ public class GUI extends JFrame {
 
 		JTable ham_table = new JTable();
 		JScrollPane scrollable_ham = new JScrollPane(ham_table);
+		scrollable_ham.setSize(TABLE_WIDTH, TABLE_LENGTH);
 
 		ham_labels.add(total_ham_label);
 		ham_labels.add(ham_bag_size);
@@ -133,7 +150,7 @@ public class GUI extends JFrame {
 		ham_details.add(scrollable_ham);
 		ham_details.add(ham_labels);
 
-		ham_details.setVisible(false);
+		// ham_details.setVisible(false);
 
 		hfolder_select.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -152,7 +169,17 @@ public class GUI extends JFrame {
 				ham_bag_size.setText(ham_total);
 				ham_bag_size.setEditable(false);
 
-				ham_details.setVisible(true);
+				// for the table
+				Vector<Vector> ham_row_data = clean_for_table(new_ham);
+				Vector<String> ham_headers = new Vector<String>();
+
+				ham_headers.add(WORDS_HEADER);
+				ham_headers.add(FREQUENCY_HEADER);
+
+				DefaultTableModel ham_table_data = new DefaultTableModel(ham_row_data, ham_headers);
+				ham_table.setModel(ham_table_data);
+
+				// ham_details.setVisible(true);
 
 			}
 		});
@@ -172,6 +199,10 @@ public class GUI extends JFrame {
 		JTextField dict_size = new JTextField();
 		JTextField total_word_count = new JTextField();
 
+		JTable classifier_table = new JTable();
+		JScrollPane scrollable_classifier = new JScrollPane(classifier_table);
+		scrollable_classifier.setSize(TABLE_WIDTH, TABLE_LENGTH);
+
 		JButton cfolder_select = new JButton("Select Classify Folder");
 		cfolder_select.setAlignmentX(classifier_details.CENTER_ALIGNMENT);
 		cfolder_select.addActionListener(new ActionListener() {
@@ -183,16 +214,6 @@ public class GUI extends JFrame {
 					chosen_folder = file_chooser.getSelectedFile();
 					System.out.println("Classify folder selected.");
 				}
-
-				if (!k_textbox.getText().isEmpty()) {
-					System.out.println(Integer.parseInt(k_textbox.getText()));
-					set_k_input(Integer.parseInt(k_textbox.getText()));
-				}
-
-				classifier = new Classifier(chosen_folder);
-				classifier.clean_classifier_data();
-				// classifier.word_given_class(new_spam);
-
 			}
 		});
 
@@ -200,7 +221,35 @@ public class GUI extends JFrame {
 		filter_button.setAlignmentX(classifier_details.CENTER_ALIGNMENT);
 		filter_button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				classifier.word_given_class(new_ham);
+				// classifier.word_given_class(new_ham);
+				if (!k_textbox.getText().isEmpty()) {
+					System.out.println(Integer.parseInt(k_textbox.getText()));
+					set_k_input(Integer.parseInt(k_textbox.getText()));
+
+					classifier = new Classifier(chosen_folder, 
+					new_spam.get_word_count(), new_ham.get_word_count(), get_k_input());
+				} else {
+					classifier = new Classifier(chosen_folder, 
+					new_spam.get_word_count(), new_ham.get_word_count());
+				}
+				// classifier.clean_classifier_data();
+				// classifier.word_given_class(new_spam);
+				// for the table
+				classifier.list_classifier_data();
+				Vector<Vector> classifier_row_data = clean_for_table(classifier);
+				Vector<String> classifier_headers = new Vector<String>();
+
+				classifier_headers.add(FILENAME_HEADER);
+				classifier_headers.add(CLASS_HEADER);
+				classifier_headers.add(P_SPAM_HEADER);
+
+				DefaultTableModel classifier_table_data = new DefaultTableModel(classifier_row_data, classifier_headers);
+				classifier_table.setModel(classifier_table_data);
+
+				dict_size.setText(String.valueOf(classifier.get_dict_size()));
+				total_word_count.setText(String.valueOf(classifier.get_word_count()));
+
+				classifier.classify_data(new_ham, new_spam);
 			}
 		});
 
@@ -214,6 +263,7 @@ public class GUI extends JFrame {
 		classifier_panel.add(classifier_details);
 		classifier_panel.add(cfolder_select);
 		classifier_panel.add(filter_button);
+		classifier_panel.add(scrollable_classifier);
 
 		main.add(spam_side);
 		main.add(ham_side);
