@@ -7,7 +7,7 @@ import java.text.DecimalFormat;
 
 public class Classifier extends BagOfWords {
 	
-	private static DecimalFormat places = new DecimalFormat("0.0000000000");
+	private static DecimalFormat places = new DecimalFormat("0.0000");
 	private File input_folder;
 	private float spam_count;
 	private float ham_count;
@@ -48,8 +48,8 @@ public class Classifier extends BagOfWords {
 		generate_p_spam(spams, hams);
 		generate_p_ham(spams, hams);
 
-		System.out.println("p_spam: " + Float.parseFloat(places.format(this.get_p_spam())) 
-			+ ", p_ham: " + Float.parseFloat(places.format(this.get_p_ham())));
+		// System.out.println("p_spam: " + Float.parseFloat(places.format(this.get_p_spam())) 
+		// 	+ ", p_ham: " + Float.parseFloat(places.format(this.get_p_ham())));
 	}
 	public Classifier(File inf, float spams, float hams, float k) {
 		this.set_input_folder(inf);
@@ -61,8 +61,8 @@ public class Classifier extends BagOfWords {
 		generate_p_spam(spams, hams);
 		generate_p_ham(spams, hams);
 
-		System.out.println("p_spam: " + Float.parseFloat(places.format(this.get_p_spam())) 
-			+ ", p_ham: " + Float.parseFloat(places.format(this.get_p_ham())));
+		// System.out.println("p_spam: " + Float.parseFloat(places.format(this.get_p_spam())) 
+		// 	+ ", p_ham: " + Float.parseFloat(places.format(this.get_p_ham())));
 	}
 
 	// methods
@@ -177,13 +177,13 @@ public class Classifier extends BagOfWords {
 					// System.out.println("instances of the word in ham: " + instances);
 				}
 
-				System.out.println("instances of the word in ham: " + instances);
+				System.out.println("instances of the word " + word + " in ham: " + instances);
 
 				word_temp = Float.parseFloat(places.format((instances / the_bag.size())));
 				System.out.println("p(w|ham) = " + word_temp);					
 				m_given_ham = Float.parseFloat(places.format(m_given_ham * word_temp));
 
-				// System.out.printl	n("P(message|Ham) = " + m_given_ham);	
+				System.out.println("P(message|Ham) = " + m_given_ham);	
 				word_temp = 0;
 	
 			}
@@ -220,16 +220,27 @@ public class Classifier extends BagOfWords {
 
 			for (String word : chopped_input) {
 
-				instances = the_bag.get(word);
-				System.out.println("instances of the word in spam: " + instances);
+				if (the_bag.containsKey(word)) {
+					instances = the_bag.get(word);
+					// System.out.println("instances of the word " + word + " in spam: " + instances);
+				} else {
+					instances = 0.0f;
+					// System.out.println("instances of the word " + word + " in spam: " + instances);
+				}
+				// instances = the_bag.get(word);
+				System.out.println("instances of the word " + word + " in spam: " + instances);
+				System.out.println("k_value: " + k_value);
+				System.out.println("bag_contents: " + bag_contents);
+				System.out.println("bag.size(): " + the_bag.size());
+				System.out.println("new_words.size(): " + new_words.size());
 
-				word_temp = Float.parseFloat(places.format(
-					((instances + k_value) / (bag_contents + (k_value * (the_bag.size() + new_words.size()))))
-				));
+				word_temp = Float.parseFloat(places.format((
+					(instances + k_value) / (bag_contents + (k_value * (the_bag.size() + new_words.size())))))
+				);
 				System.out.println("p(w|spam) = " + word_temp);
 
 				m_given_spam = Float.parseFloat(places.format(m_given_spam * word_temp));
-				System.out.println("P(message|spam) = " + m_given_spam);
+				System.out.println("P(message|spam) = " + m_given_spam + "\n");
 
 				word_temp = 0;
 	
@@ -239,13 +250,15 @@ public class Classifier extends BagOfWords {
 
 			for (String word : chopped_input) {
 
-				if (!the_bag.containsKey(word)) {
+				if (the_bag.containsKey(word)) {
 					instances = the_bag.get(word);
-					System.out.println("instances of the word in spam: " + instances);
+					// System.out.println("instances of the word " + word + " in spam: " + instances);
 				} else {
 					instances = 0.0f;
-					System.out.println("instances of the word in spam: " + instances);
+					// System.out.println("instances of the word " + word + " in spam: " + instances);
 				}
+
+				System.out.println("instances of the word " + word + " in spam: " + instances);
 
 				word_temp = Float.parseFloat(places.format((instances / the_bag.size())));
 				System.out.println("p(w|spam) = " + word_temp);					
@@ -257,6 +270,8 @@ public class Classifier extends BagOfWords {
 			}
 
 		}
+
+		// System.out.println("P(message|spam) = " + m_given_spam);
 
 		return m_given_spam;
 
@@ -280,11 +295,24 @@ public class Classifier extends BagOfWords {
 		File[] input_files = this.get_input_folder().listFiles();
 
 		for (File input : input_files) {
-			System.out.println("starting!!");
 
 			// Read the file and save as a string
 			String contents = read_file_contents(input);
-			System.out.println("Final P(message|Ham) = " + this.compute_message_given_ham(ham, contents));
+
+			// compute for the necessary values
+			float mgs = this.compute_message_given_spam(spam, contents);
+			float mgh = this.compute_message_given_ham(ham, contents);
+			float ps = this.get_p_spam();
+			float ph = this.get_p_ham();
+			float p_msg = compute_p_message(mgs, ps, mgh, ph);
+			float sgm = compute_spam_given_message(mgs, p_msg);
+
+			System.out.println("P(message|Ham) = " + mgh);
+			System.out.println("P(message|Spam) = " + mgs);
+			System.out.println("P(Spam) = " + ps);
+			System.out.println("P(Ham) = " + ph);
+			System.out.println("P(message) = " + p_msg);
+			System.out.println("P(Spam|Message) = " + sgm);
 
 		}
 
