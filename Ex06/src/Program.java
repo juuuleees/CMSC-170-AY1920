@@ -1,18 +1,17 @@
-import java.util.Scanner;
-import java.lang.StringBuilder;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.BufferedReader;
-import java.io.File;
-
 public class Program {
+	
+	private GUI prog_interface = new GUI();
 
-	private GUI ui = new GUI();
+	// getters and setters
+	public GUI get_prog_interface() { return this.prog_interface; }
 
-	// methods
+	public void set_prog_interface(GUI pi) { this.prog_interface = pi; }
+	
+	// constructor
+	public Program() {}
+
 	public void run() {
-		ui.graphics_setup();
+		prog_interface.initialize();
 	}
 
 }
