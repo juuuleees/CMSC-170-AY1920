@@ -21,7 +21,11 @@ public class GraphPanel extends JPanel {
 	private ArrayList<Point> points;
 
 	public GraphPanel() {}
-	public GraphPanel(ArrayList<Point> p) {	this.points = points; }
+	public GraphPanel(ArrayList<Point> p) {	
+		this.points = points;
+	}
+
+	// TODO:	Draw points dynamically and with different colors per point.
 
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -30,11 +34,43 @@ public class GraphPanel extends JPanel {
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+		// draw the canvas and borders
+		g2.setColor(Color.BLACK);
+		g2.drawRect(12,12,450,390);
 		g2.setColor(Color.WHITE);
-		// g2.fillRect()
+		g2.fillRect(13,13,449,389);
+
+		// draw your basic cartesian plane
+		// start with the axes
+		g2.setColor(Color.BLACK);
+		g2.drawLine(245,12,245,402);		// x
+		g2.drawLine(12,205,460,205);		// y
+
+		// then draw the ticks for x-axis then y-axis
+		for (int i = 0; i < 11;i++) {
+			// x ticks
+			g2.drawLine(265+(i*20),200,265+(i*20),210);
+			g2.drawLine(225-(i*20),200,225-(i*20),210);	
+			if (((i%2) == 0) && (i != 0) && (i != 10)) {
+				g2.drawString(Integer.toString(i),226,210-(i*20));
+				g2.drawString(Integer.toString(-i),226,210+(i*20));
+			}
+			// y ticks
+			g2.drawLine(240,225+(i*20),250,225+(i*20));		// y
+			g2.drawLine(240,225-(i*20),250,225-(i*20));	
+			if (((i%2) == 0) && (i != 0)) {
+				g2.drawString(Integer.toString(-i),238-(i*20),222);
+				g2.drawString(Integer.toString(i),242+(i*20),222);
+			}	
+		}
 
 	}
 
 }
 
-// Reference: https://gist.github.com/roooodcastro/6325153
+/*
+	References: 
+		https://gist.github.com/roooodcastro/6325153
+		https://www3.ntu.edu.sg/home/ehchua/programming/java/J4b_CustomGraphics.html
+
+*/

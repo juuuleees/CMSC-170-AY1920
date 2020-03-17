@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
+import java.util.ArrayList;
 import java.io.File;
 
 public class GUI extends JFrame {
@@ -94,7 +95,7 @@ public class GUI extends JFrame {
 		main.add(in_out_panel);
 		main.add(Box.createRigidArea(new Dimension(20,0)));
 
-		add_actions(set_t_data, classify_inputs, point_input);
+		add_actions(set_t_data, classify_inputs, point_input, point_to_class, headers);
 
 		add(main);
 		setSize(WINDOW_WIDTH, WINDOW_LENGTH);
@@ -103,7 +104,34 @@ public class GUI extends JFrame {
 
 	}
 
-	public void add_actions(JButton data, JButton classifier, JTextArea input_area) {
+	public void generate_new_table(KNN update, JTable knn_table, Vector<String> header_vec) {
+
+		// ArrayList<Vector<Double>> updated_points = new ArrayList<Vector<Double>>(update.get_points().keySet());
+		// ArrayList<Integer> updated_classes = new ArrayList<Integer>(update.get_points().values());
+		Vector<Vector> updated_table = new Vector<Vector>();
+
+		for (Vector<Double> key : update.get_points().keySet()) {
+
+			Vector<Vector> values_vec = new Vector<Vector>();
+			Vector<Vector<Double>> points_vec = new Vector<Vector<Double>>();
+			Vector<Integer> classes_vec = new Vector<Integer>();
+
+			points_vec.add(key);
+			classes_vec.add(update.get_points().get(key));
+
+			values_vec.add(points_vec);
+			values_vec.add(classes_vec);
+
+			updated_table.add(values_vec);
+
+		}
+
+		DefaultTableModel new_table = new DefaultTableModel(updated_table, header_vec);
+		knn_table.setModel(new_table);
+
+	}
+
+	public void add_actions(JButton data, JButton classifier, JTextArea input_area, JTable data_table, Vector<String> header_vec) {
 		System.out.println("yes!");
 
 		data.addActionListener(new ActionListener() {
@@ -124,16 +152,27 @@ public class GUI extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 
 				String input_str = input_area.getText();
-				String[] pieces = input_str.split(" ");
-				Vector<Double> new_point = new Vector<Double>();
+				String[] pieces = input_str.split("\\n");
+				Vector<Double> temp_point = new Vector<Double>();
+				ArrayList<Vector<Double>> given_points = new ArrayList<Vector<Double>>();
 
 				for (String p : pieces) {
 					System.out.println(p);
-					double pt_element = Double.parseDouble(p);
-					new_point.add(pt_element);
+					String[] sub_pieces = p.split(" ");
+					for (String sp : sub_pieces) {
+						double pt_element = Double.parseDouble(sp);
+						temp_point.add(pt_element);
+					}
+					Vector<Double> new_point = new Vector<Double>(temp_point);
+					given_points.add(new_point);
+					temp_point.clear();
 				}
 
-				knn_classifier.run_knn_algorithm(new_point);
+				for (Vector<Double> np : given_points) {
+					System.out.println(np);
+					knn_classifier.run_knn_algorithm(np);
+					generate_new_table(knn_classifier, data_table, header_vec);
+				}
 
 			}
 		});

@@ -1,5 +1,8 @@
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Collections;
 import java.util.Set;
 import java.util.Vector;
 import java.lang.StringBuilder;
@@ -95,50 +98,58 @@ public class KNN {
 
 	public void run_knn_algorithm(Vector<Double> new_point) {
 
-		LinkedList<Double> distances = new LinkedList<Double>();
-		LinkedHashMap<Double, Vector<Double> pt_distances = new LinkedHashMap<Double, Vector<Double>();
+		LinkedHashMap<Double, Vector<Double>> pt_distances = new LinkedHashMap<Double, Vector<Double>>();
+		LinkedHashMap<Integer, Integer> classes = new LinkedHashMap<Integer, Integer>();
 		LinkedList<Vector<Double>> k_nearest = new LinkedList<Vector<Double>>();
 		Set<Vector<Double>> keys = this.points.keySet();
+		int new_pt_class = 0;
 
 		for (Vector<Double> point : keys) {
+			System.out.println(point);
 			Double initial = 0d;
-			// System.out.println("second_val: " + second_val.getClass());
 			
 			for (int i = 0; i < this.elements; i++) {
-				System.out.println(new_point.get(i) + " (new), " + point.get(i) + " (old)");
 				Double a = new_point.get(i);
 				Double b = point.get(i);
 				initial = initial + Math.pow((a - b), 2);	
 			}
-			System.out.println(initial);
+			
 			Double distance = Math.sqrt(initial);
-			System.out.println("Distance: " + distance + "\n");
-			distances.add(distance);
 			pt_distances.put(distance, point);
 		}
 
-		// sort in ascending order
-		// double temp = 0;
-		// for (int i = 0; i < distances.size()-1; i++) {
-		// 	int min = i;
-		// 	for (int j = i+1; j < distances.size(); j++) {
-		// 		if (distances.get(j) < distances.get(min)) {
-		// 			min = j;
-		// 		}
-		// 	}
+		// alternative ascending sort
+		// Reference: https://stackoverflow.com/questions/922528/how-to-sort-map-values-by-key-in-java
+		List<Double> asc_keys = new ArrayList<Double>(pt_distances.keySet());
+		Collections.sort(asc_keys);
 
-		// 	// swap(min, i)
-		// 	temp = distances.get(min);
-		// 	distances.set(min, distances.get(i));
-		// 	distances.set(i, temp);
-		// }
+		// save the first k points mapped to the first k distances
+		for (int i = 0; i < pt_distances.size(); i++) {
+			if (i < this.chosen_k) {
+				k_nearest.add(pt_distances.get(asc_keys.get(i)));
+			}
+		}
 
-		// // get the first k distances
-		// for (int i = 0; i < this.chosen_k; i++) {
-			
-		// }
+		// get the majority's class
+		int count = 0;
+		for (Vector<Double> k_near : k_nearest) {
+			int class_val = this.points.get(k_near);
+			if (!classes.containsKey(class_val)) {
+				classes.put(class_val, 1);
+			} else {
+				classes.replace(class_val, classes.get(class_val)+1);
+			}
+		}
 
-		// TODO: Sort LinkedHashMap in ascending order.
+		int majority = 0;
+		for (int c : classes.keySet()) {
+			if (classes.get(c) > majority) {
+				majority = classes.get(c);
+				new_pt_class = c;
+			}
+		}
+
+		this.points.put(new_point, new_pt_class);
 
 	}
 
