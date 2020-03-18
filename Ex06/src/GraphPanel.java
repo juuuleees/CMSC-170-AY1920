@@ -6,7 +6,8 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.Vector;
+import java.lang.Math;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -18,10 +19,10 @@ public class GraphPanel extends JPanel {
 	private Color point_color = new Color(44, 102, 230, 180);
 	private int point_width = 4;
 	private int number_y_divisions = 10;
-	private ArrayList<Point> points;
+	private ArrayList<Vector<Double>> points = new ArrayList<Vector<Double>>();
 
 	public GraphPanel() {}
-	public GraphPanel(ArrayList<Point> p) {	
+	public GraphPanel(ArrayList<Vector<Double>> p) {	
 		this.points = points;
 	}
 
@@ -64,6 +65,28 @@ public class GraphPanel extends JPanel {
 			}	
 		}
 
+		g2.setColor(Color.BLUE);
+		// This part was for drawing the points on the graph and matatapos ko na sana
+		// but I'm hungry and I gotta cook huhu sorryyy
+		// It does work but the points aren't appearing in the right places yet.
+
+		// if (!this.points.isEmpty()) {
+		// 	for (int i = 0; i < this.points.size(); i++) {
+		// 		System.out.println(this.points.get(i));
+		// 		int x_coor = (int)Math.round(this.points.get(i).get(0));
+		// 		int y_coor = (int)Math.round(this.points.get(i).get(1));
+		// 		g2.drawOval(x_coor+10,y_coor+10,5,5);
+		// 	}
+		// }
+
+	}
+
+	public void place_points(Vector<Vector<Double>> new_points) {
+
+		for (Vector<Double> p : new_points) {
+			this.points.add(p);
+		}
+		this.repaint();
 	}
 
 }

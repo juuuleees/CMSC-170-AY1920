@@ -95,7 +95,8 @@ public class GUI extends JFrame {
 		main.add(in_out_panel);
 		main.add(Box.createRigidArea(new Dimension(20,0)));
 
-		add_actions(set_t_data, classify_inputs, point_input, point_to_class, headers);
+		add_data_actions(set_t_data,point_graph);
+		add_classify_actions(classify_inputs,point_input,point_to_class,headers,point_graph);
 
 		add(main);
 		setSize(WINDOW_WIDTH, WINDOW_LENGTH);
@@ -131,7 +132,7 @@ public class GUI extends JFrame {
 
 	}
 
-	public void add_actions(JButton data, JButton classifier, JTextArea input_area, JTable data_table, Vector<String> header_vec) {
+	public void add_data_actions(JButton data, GraphPanel gp) {
 		System.out.println("yes!");
 
 		data.addActionListener(new ActionListener() {
@@ -145,9 +146,12 @@ public class GUI extends JFrame {
 				}
 
 				knn_classifier = new KNN(training_data);
+				gp.place_points(new Vector<Vector<Double>>(knn_classifier.get_points().keySet()));
 			}
 		});
+	}
 
+	public void add_classify_actions(JButton classifier, JTextArea input_area, JTable data_table, Vector<String> header_vec, GraphPanel gp) {
 		classifier.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
@@ -173,6 +177,8 @@ public class GUI extends JFrame {
 					knn_classifier.run_knn_algorithm(np);
 					generate_new_table(knn_classifier, data_table, header_vec);
 				}
+
+				gp.place_points(new Vector<Vector<Double>>(knn_classifier.get_points().keySet()));
 
 			}
 		});
