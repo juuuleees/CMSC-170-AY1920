@@ -15,6 +15,7 @@ public class Datapack {
 	private double learning_rate;
 	private double threshold;
 	private double bias;
+	private int features;
 	private File input = new File("inputs/input.txt");
 
 	// getters and setters
@@ -22,19 +23,25 @@ public class Datapack {
 	public double get_learning_rate() { return this.learning_rate; }
 	public double get_threshold() { return this.threshold; }
 	public double get_bias() { return this.bias; }
+	public int get_features() { return this.features; }
+	public File get_input() { return this.input; }
 
 	public void set_training_data(LinkedList<LinkedList<Double>> td) { this.training_data = td; }
 	public void set_learning_rate(double lr) { this.learning_rate = lr; }
 	public void set_threshold(double new_thres) { this.threshold = new_thres; }
 	public void set_bias(double new_bias) { this.bias = new_bias; }
+	public void set_features(int fs) { this.features = fs; }
+	public void set_input(File in) { this.input = in; }
 
-	// constructor
+	// constructors
 	public Datapack() {
 		read_input_file(input);
 	}
+	public Datapack(File data_file) {
+		read_input_file(data_file);
+	}
 
 	// methods
-
 	public void read_input_file(File in) {
 
 		int lines = 0;
@@ -76,11 +83,21 @@ public class Datapack {
 
 				reader.close();
 
-				System.out.println("Printing contents...");
-				// System.out.println(this.get_learning_rate());
-				for (LinkedList list : training_data) {
-					System.out.println(list);
+				double b = this.get_bias();
+
+				for (LinkedList<Double> list : training_data) {
+					set_features(list.size()-1);
+					list.add((list.size() - 1), b);
 				}
+
+				// System.out.println("Printing contents...");
+				// System.out.println(this.get_learning_rate());
+				// System.out.println(this.get_threshold());
+				// System.out.println(this.get_bias());
+				// for (LinkedList list : training_data) {
+				// 	System.out.println(list);
+				// }
+				// System.out.println("Features: " + get_features());
 
 			}
 
