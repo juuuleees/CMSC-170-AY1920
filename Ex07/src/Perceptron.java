@@ -28,7 +28,34 @@ public class Perceptron {
 		this.initial_data = first_data;
 		this.t = first_data.get_threshold();
 		this.r = first_data.get_learning_rate();
-		compute_first_iteration();
+		find_converged_weights();
+	}
+
+	public boolean check_consistency(Iteration curr_iteration) {
+
+		LinkedList<Double> curr_weights = curr_iteration.rows.get(curr_iteration.rows.size()-1);
+		int weight_index = 0;
+		boolean is_consistent = true;
+		for (LinkedList<Double> row : curr_iteration.rows.subList(1,(curr_iteration.rows.size()-1))) {
+
+			for (double weight : row) {
+
+				if (weight == row.get(weight_index)) {
+					continue;
+				} else { 
+					is_consistent = false; 
+					System.out.println("Weights did not converge.");
+					break;
+				}
+
+			}
+
+			if (is_consistent == false) { break; }
+
+		}
+
+		return is_consistent;
+
 	}
 
 	// methods
@@ -77,7 +104,7 @@ public class Perceptron {
 			} else {
 
 				LinkedList<Double> prev_row = iteration_data.rows.get(list_index);
-				LinkedList<Double> current_weights = new LinkedList<Double>(prev_row.subList(weights, weights+weights));
+				LinkedList<Double> current_weights = new LinkedList<Double>(prev_row.subList(weights, weights*2));
 				LinkedList<Double> updated_row = new LinkedList<Double>(list);
 				double z = prev_row.get(prev_row.size()-1);
 				double y = prev_row.get(prev_row.size()-2);
@@ -123,10 +150,121 @@ public class Perceptron {
 		}
 
 		Iteration first_iteration = new Iteration(iteration_data);
-		for (LinkedList l : first_iteration.rows) {
-			System.out.println(l);
+		all_iterations.add(first_iteration);
+
+		// for (LinkedList l : all_iterations.get(0).rows) {
+		// 	System.out.println(l);
+		// }
+		// System.out.println();
+
+	}
+
+	public void find_converged_weights() {
+
+		LinkedList<Double> weight_list = new LinkedList<Double>();
+		Iteration iteration_data = new Iteration();
+		boolean converged = false;
+		boolean first_row = true;
+		double a = 0;
+		int list_index = 0;
+		int content_index = 0;
+		int weights = this.initial_data.get_features() + 1;
+
+		compute_first_iteration();
+
+		Iteration curr_iteration = new Iteration(all_iterations.get(0));
+		converged = check_consistency(curr_iteration);
+
+		LinkedList<Double> prev_row = new LinkedList<Double>(curr_iteration.rows.get(curr_iteration.rows.size()-1));
+		LinkedList<Double> current_weights = new LinkedList<Double>(prev_row.subList(weights,weights*2));
+
+		// compute using the current row not the previous row jusqlordt
+		while (converged == false) {
+
+			for (LinkedList<Double> row : curr_iteration.rows) {
+
+				double z = row.get(row.size()-1);
+				double y = row.get(row.size()-2);
+				System.out.println("current weights:" + current_weights);
+				LinkedList<Double> updated_row = new LinkedList<Double>(row);
+				System.out.println(row);
+
+				// recompute a
+				for (double cw : current_weights) {
+					if (content_index != weights) {
+						a = a + (cw * (updated_row.get(content_index)));
+						content_index++;
+					}
+				}
+
+				content_index = 0;
+
+				updated_row.set((updated_row.size()-3),a);
+
+				// update y
+				if (a > t) {
+					updated_row.set((updated_row.size()-2), 1d);
+				} else {
+					updated_row.set((updated_row.size()-2), 0d);
+				}
+
+				System.out.println("updating row...");
+				if (first_row == true) {
+
+					for (double w : current_weights) {
+						if (content_index != weights) {
+							updated_row.set((weights+content_index), w);
+							content_index++;
+						}
+					}
+
+					first_row = false;
+
+				} else {
+
+					for (double x_n : row) {
+						if (content_index != weights) {
+							System.out.println("current weight: " + current_weights.get(content_index));
+							System.out.println("x_n: " + x_n);
+							double adjusted_weight = current_weights.get(content_index) + ((r * x_n) * (z-y));
+							System.out.println("adjusted weight: " + adjusted_weight);
+							adjusted_weight = Math.floor(adjusted_weight * 100) / 100;
+							updated_row.set((weights+content_index), adjusted_weight);
+							current_weights.set(content_index, adjusted_weight);
+							content_index++;
+						}
+					}
+
+				}
+
+				System.out.println("updated row: " + updated_row);
+				System.out.println("updated weights: " + current_weights);
+
+				content_index = 0;
+
+				iteration_data.rows.add(updated_row);
+
+				list_index++;
+				content_index = 0;
+				a = 0;
+
+			}
+
+			first_row = true;
+
+			Iteration new_iteration = new Iteration(iteration_data);
+			all_iterations.add(new_iteration);
+
+			System.out.println("all iterations");
+			for (Iteration i : all_iterations) {
+				for (LinkedList l : i.rows) {
+					System.out.println(l);
+				}
+				System.out.println();
+			}
+
+			break;
 		}
-		System.out.println();
 
 	}
 
