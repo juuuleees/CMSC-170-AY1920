@@ -7,16 +7,16 @@ import java.lang.StringBuilder;
 
 public class Datapack {
 	
-	private LinkedList<Vector<Double>> data_points = new LinkedList<Vector<Double>>();
+	private LinkedList<Datapoint> data_points = new LinkedList<Datapoint>();
 	private File input_file = new File("inputs/input.txt");
 	private int k_value;
 
 	// getters and setters
-	public LinkedList<Vector<Double>> get_data_points() { return this.data_points; }
+	public LinkedList<Datapoint> get_data_points() { return this.data_points; }
 	public File get_input_file() { return this.input_file; }
 	public int get_k_value() { return this.k_value; }
 
-	public void set_data_points(LinkedList<Vector<Double>> dpts) { this.data_points = dpts; }
+	public void set_data_points(LinkedList<Datapoint> dpts) { this.data_points = dpts; }
 	public void set_input_file(File n_in) { this.input_file = n_in; }
 	public void set_k_value(int nkv) { this.k_value = nkv; }
 
@@ -26,7 +26,7 @@ public class Datapack {
 		this.input_file = input;
 		read_data();
 	}
-	public Datapack(LinkedList<Vector<Double>> dpts, File inf) {
+	public Datapack(LinkedList<Datapoint> dpts, File inf) {
 		this.data_points = dpts;
 		this.input_file = inf;
 
@@ -49,14 +49,16 @@ public class Datapack {
 					this.k_value = Integer.parseInt(input_str);
 				} else {
 
-					Vector<Double> data_point = new Vector<Double>();
-					String[] features = input_str.split(" ");
+					Vector<Double> features = new Vector<Double>();
+					Datapoint d = new Datapoint();
+					String[] feature_str = input_str.split(" ");
 
-					for (String f : features) {
-						data_point.add(Double.parseDouble(f));
+					for (String f : feature_str) {
+						features.add(Double.parseDouble(f));
 					}
 
-					this.data_points.add(data_point);
+					d.set_feature_vector(features);
+					this.data_points.add(d);
 
 				}
 				lines++;
