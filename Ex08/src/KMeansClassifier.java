@@ -74,6 +74,7 @@ public class KMeansClassifier {
 
 		HashMap<Centroid, LinkedList<Datapoint>> second_batch = new HashMap<Centroid, LinkedList<Datapoint>>();
 		int centroid_index = 0; 
+		boolean first = true;
 
 		for (Centroid c : curr_cs) {
 			System.out.println(c.get_feature_vector() + ", C" + c.get_centroid_num());
@@ -87,9 +88,52 @@ public class KMeansClassifier {
 
 		for (Datapoint dpt : data_pts) {
 
-			// figure out how to compute the distance then compare it to the previous distance
+			Vector<Double> features = dpt.get_feature_vector();
+			LinkedList<Double> distances = new LinkedList<Double>();
+			double distance = 0;
+			double smallest_dist = 0;
+			int ft_index = 0;
+
+			for (Centroid c : curr_cs) {
+				for (double coor : c.get_feature_vector()) {
+					distance = distance + Math.pow((features.get(ft_index) - coor), 2);
+					ft_index++;
+				}	
+				distance = Math.sqrt(distance);
+
+				if (first == true) { smallest_dist = distance; first = false; }
+				else {
+					if (distance < smallest_dist) {
+						smallest_dist = distance;
+					}
+				}
+
+				distances.add(distance);
+
+				distance = 0;
+				ft_index = 0;
+			}
+
+			// System.out.println("\n" + smallest_dist);
+			// System.out.println(distances);
+			// System.out.println(distances.indexOf(smallest_dist));
+
+			int c_index = distances.indexOf(smallest_dist);
+			second_batch.get(curr_cs.get(c_index)).add(dpt);
+
+			distances.clear();
+			first = true;
+
+			// break;
 
 		}
+
+		// for (Centroid c : second_batch.keySet()) {
+		// 	System.out.println(c.get_feature_vector() + ": \n");
+		// 	for (Datapoint dpt : second_batch.get(c)) {
+		// 		System.out.println(dpt.get_feature_vector());
+		// 	}
+		// }
 
 		return second_batch;
 
@@ -140,7 +184,7 @@ public class KMeansClassifier {
 		HashMap<Centroid, LinkedList<Datapoint>> classified_points = first_iteration(curr_centroids, data_points);
 		int curr_c_index = 0;
 		int iterations = 1;
-
+		boolean is_stable = true;
 		
 
 	}
