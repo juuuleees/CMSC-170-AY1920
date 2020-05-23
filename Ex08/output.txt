@@ -1,0 +1,16 @@
+Iteration 1
+Centroid 1: [4.0, 4.0, 0.0]
+Centroid 2: [5.0, 4.0, 0.0]
+
+Iteration 2
+Centroid 1: [5.0, 4.0, 0.0]
+Centroid 2: [2.5714285714285716, 2.5714285714285716, 0.0]
+
+Iteration 3
+Centroid 1: [4.25, 4.0, 0.0]
+Centroid 2: [1.5, 1.5, 0.0]
+
+Iteration 4
+Centroid 1: [4.25, 4.0, 0.0]
+Centroid 2: [1.5, 1.5, 0.0]
+

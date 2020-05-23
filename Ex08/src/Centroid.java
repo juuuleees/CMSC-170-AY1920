@@ -13,7 +13,9 @@ public class Centroid extends Datapoint {
 	public void set_centroid_status(boolean cs) { this.centroid_status = cs; }
 	public void set_centroid_num(int cn) { this.centroid_num = cn; }
 	// constructor
-	public Centroid() {}
+	public Centroid() {
+		this.centroid_status = true;
+	}
 	public Centroid(Vector<Double> fv) {
 		this.set_feature_vector(fv);
 	}

@@ -5,7 +5,9 @@ import java.util.Vector;
 import java.io.File;
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
+import java.io.FileWriter;
 import java.lang.Math;
+import java.lang.StringBuilder;
 
 public class KMeansClassifier {
 	
@@ -32,17 +34,27 @@ public class KMeansClassifier {
 
 		LinkedList<Centroid> random_centroids = new LinkedList<Centroid>();
 		int k = this.training_data.get_k_value();
-		int data_count = this.training_data.get_data_points().size();
+		LinkedList<Datapoint> data_points = new LinkedList<Datapoint>(this.training_data.get_data_points());
+		int data_count = data_points.size();
 		int data_index = 0;
 		int centroid_count = 0;
 		Random randomizer = new Random(System.currentTimeMillis());
 
 		while (centroid_count != k) {
+
+			Centroid centroid = new Centroid(); 
+
 			if (centroid_count != k) {
 				data_index = randomizer.nextInt(data_count);
-				Vector<Double> fv = new Vector<Double>(this.training_data.get_data_points().get(data_index).get_feature_vector());
-				Centroid centroid = new Centroid(fv, true, centroid_count);
+				Vector<Double> fv = new Vector<Double>(data_points.get(data_index).get_feature_vector());
+	
+				centroid.set_feature_vector(fv);
+				centroid.set_centroid_num(centroid_count);
+
 				random_centroids.add(centroid);
+				data_points.remove(data_index);
+				data_count = data_points.size();
+
 			}
 			centroid_count++;
 		}
@@ -70,15 +82,11 @@ public class KMeansClassifier {
 	}
 
 	/* Performs the first iteration using the first batch of randomly picked centroids. */
-	public HashMap<Centroid, LinkedList<Datapoint>> first_iteration(LinkedList<Centroid> curr_cs, LinkedList<Datapoint> data_pts) {
+	public HashMap<Centroid, LinkedList<Datapoint>> organize_datapoints(LinkedList<Centroid> curr_cs, LinkedList<Datapoint> data_pts) {
 
 		HashMap<Centroid, LinkedList<Datapoint>> second_batch = new HashMap<Centroid, LinkedList<Datapoint>>();
 		int centroid_index = 0; 
 		boolean first = true;
-
-		for (Centroid c : curr_cs) {
-			System.out.println(c.get_feature_vector() + ", C" + c.get_centroid_num());
-		}
 
 		// put the centroids in the hashmap for easier groupings
 		for (Centroid c : curr_cs) {
@@ -95,11 +103,8 @@ public class KMeansClassifier {
 			int ft_index = 0;
 
 			for (Centroid c : curr_cs) {
-				for (double coor : c.get_feature_vector()) {
-					distance = distance + Math.pow((features.get(ft_index) - coor), 2);
-					ft_index++;
-				}	
-				distance = Math.sqrt(distance);
+				
+				distance = find_distance(c, dpt);
 
 				if (first == true) { smallest_dist = distance; first = false; }
 				else {
@@ -114,33 +119,66 @@ public class KMeansClassifier {
 				ft_index = 0;
 			}
 
-			// System.out.println("\n" + smallest_dist);
-			// System.out.println(distances);
-			// System.out.println(distances.indexOf(smallest_dist));
-
 			int c_index = distances.indexOf(smallest_dist);
 			second_batch.get(curr_cs.get(c_index)).add(dpt);
 
 			distances.clear();
 			first = true;
 
-			// break;
-
 		}
-
-		// for (Centroid c : second_batch.keySet()) {
-		// 	System.out.println(c.get_feature_vector() + ": \n");
-		// 	for (Datapoint dpt : second_batch.get(c)) {
-		// 		System.out.println(dpt.get_feature_vector());
-		// 	}
-		// }
 
 		return second_batch;
 
 	}
 
+	public LinkedList<Centroid> compute_new_centroids(HashMap<Centroid, LinkedList<Datapoint>> curr_data) {
+
+		LinkedList<Centroid> new_centroids = new LinkedList<Centroid>();
+		int coor_index = 0;
+		int iterations = 0;
+
+		for (Centroid c : curr_data.keySet()) {
+
+			Centroid updated_centroid = new Centroid();
+
+			for (Datapoint dpt : curr_data.get(c)) {
+
+				for (Double dpt_coor : dpt.get_feature_vector()) {
+					if (iterations == 0) {
+						
+						updated_centroid.get_feature_vector().add(dpt_coor);
+
+					} else if (iterations != 0) {
+						
+						updated_centroid.get_feature_vector().set(coor_index, (updated_centroid.get_feature_vector().get(coor_index) + dpt_coor));
+
+					}
+					coor_index++;
+				}
+
+				coor_index = 0;
+				iterations++;
+
+			}
+
+			iterations = 0;
+
+			for (double c_coor : updated_centroid.get_feature_vector()) {
+				updated_centroid.get_feature_vector().set(coor_index, (updated_centroid.get_feature_vector().get(coor_index) / curr_data.get(c).size()));
+				coor_index++;
+			}
+
+			coor_index = 0;
+
+			new_centroids.add(updated_centroid);
+
+		}
+
+		return new_centroids;
+
+	}
+
 	/* Checks if the centroids have stabilized based on the centroids taken from the previous iteration. */
-	/* girlalu mali itez. kulang ng isa pang for loop bc you gotta do this for every class of centroid parang ganoin */ 
 	public boolean stable_centroids(LinkedList<Centroid> curr_cs, LinkedList<Centroid> prev_cs) {
 
 		boolean stable = true;
@@ -152,40 +190,99 @@ public class KMeansClassifier {
 				Vector<Double> curr = curr_cs.get(centroid_index).get_feature_vector();
 				Vector<Double> prev = prev_cs.get(centroid_index).get_feature_vector();
 
-				for (double feature : curr) {
-					if (fv_index != prev.size()) {
-						if (curr.get(fv_index) != prev.get(fv_index)) {
-							stable = false;
-							break;
-						}
-					}
+				if (curr.equals(prev)) {
+					continue;
+				} else {
+					stable = false;
+					break;
 				}
 
-				fv_index = 0;
-			} else if (prev_cs.size() == 0) { 
-				stable = false;
-				break; 
 			}
+
 			centroid_index++;
+
+			if (stable == false) { break; }
+
 		}
 
 		return stable;
 
 	}
 
+	public void write_to_file(LinkedList<LinkedList<Centroid>> all_iterations) {
 
-	// andaming kailangan i-overhaul, start with Datapack.java and modify the object type
-	// to be Datapoint not just Vector<Double>
+		StringBuilder iteration_temp = new StringBuilder();
+		StringBuilder centroid_temp = new StringBuilder();
+		int list_counter = 1;
+		int c_counter = 1;
+
+		iteration_temp.append("Iteration ");
+		centroid_temp.append("Centroid ");
+
+		try {
+
+			FileWriter write_to_file = new FileWriter(new File("output.txt"));
+			PrintWriter print_to_file = new PrintWriter(write_to_file);
+
+			for (LinkedList<Centroid> i : all_iterations) {
+
+				print_to_file.print(iteration_temp);
+				print_to_file.print(list_counter + "\n");
+
+				for (Centroid c : i) {
+					print_to_file.print(centroid_temp);
+					print_to_file.print(c_counter + ": ");
+					print_to_file.print(c.get_feature_vector() + "\n");
+					c_counter++;
+				}
+
+				print_to_file.print("\n");
+				c_counter = 1;
+				list_counter++;
+
+			}
+
+			print_to_file.close();
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+	}
+
 	public void classify() {
 
+		LinkedList<LinkedList<Centroid>> all_iterations = new LinkedList<LinkedList<Centroid>>();
 		LinkedList<Centroid> curr_centroids = new LinkedList<Centroid>(randomize_centroids());
 		LinkedList<Centroid> prev_centroids = new LinkedList<Centroid>();
 		LinkedList<Datapoint> data_points = this.training_data.get_data_points();
-		HashMap<Centroid, LinkedList<Datapoint>> classified_points = first_iteration(curr_centroids, data_points);
+		HashMap<Centroid, LinkedList<Datapoint>> classified_points = organize_datapoints(curr_centroids, data_points);
 		int curr_c_index = 0;
-		int iterations = 1;
-		boolean is_stable = true;
-		
+		int iterations = 0;
+		boolean is_stable = false;
+
+		all_iterations.add(curr_centroids);
+
+		while (is_stable != true) {
+
+			prev_centroids = new LinkedList<Centroid>(curr_centroids);
+			curr_centroids = compute_new_centroids(classified_points);
+			all_iterations.add(new LinkedList<Centroid>(curr_centroids));
+
+			is_stable = stable_centroids(curr_centroids, prev_centroids);
+			iterations++;
+
+			if (is_stable == true) {
+				break;
+			} else {
+				classified_points = organize_datapoints(curr_centroids, data_points);
+			}
+
+		}
+
+		write_to_file(all_iterations);
+
+		System.out.println("Classification process completed. Output in output.txt.");
 
 	}
 
